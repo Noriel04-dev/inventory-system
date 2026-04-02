@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Inventory Issuance — {{ doc_ref }}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 10pt; background: #fff; color: #000; }
+  @page { size: A4 landscape; margin: 10mm 12mm; }
+  @media print {
+    .no-print { display: none !important; }
+    body { font-size: 9pt; }
+  }
+
+  .no-print {
+    background: #1e40af; padding: 10px 20px; display: flex; align-items: center; gap: 16px;
+    position: sticky; top: 0; z-index: 100;
+  }
+  .no-print button {
+    background: #3b82f6; color: #fff; border: none; padding: 7px 20px;
+    border-radius: 6px; font-size: 0.85rem; cursor: pointer; font-weight: 600;
+  }
+  .no-print button:hover { background: #60a5fa; }
+  .no-print a { color: #bfdbfe; font-size: 0.82rem; text-decoration: none; }
+  .no-print a:hover { color: #fff; }
+
+  .page { width: 277mm; margin: 0 auto; padding: 6mm; background: #fff; }
+
+  .doc-header { display: grid; grid-template-columns: 120px 1fr auto; gap: 8px; align-items: center; border-bottom: 2.5px solid #000; padding-bottom: 6px; margin-bottom: 6px; }
+  .doc-logo img { height: 50px; width: auto; }
+  .doc-title { text-align: center; }
+  .doc-title h1 { font-size: 14pt; font-weight: bold; letter-spacing: 1px; }
+  .doc-title h2 { font-size: 10pt; font-weight: normal; color: #555; }
+  .doc-meta table { border-collapse: collapse; }
+  .doc-meta td { padding: 1px 4px; font-size: 9.5pt; }
+  .doc-meta td:first-child { font-weight: bold; text-align: right; }
+
+  .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid #000; border-bottom: none; }
+  .info-cell { padding: 3px 8px; font-size: 9.5pt; border-right: 1px solid #000; }
+  .info-cell:last-child { border-right: none; }
+  .info-label { font-weight: bold; }
+
+  .items-table { width: 100%; border-collapse: collapse; font-size: 9pt; }
+  .items-table th, .items-table td { border: 1px solid #000; padding: 3px 6px; }
+  .items-table th { background: #1e40af; color: #fff; font-weight: bold; text-align: center; font-size: 8.5pt; }
+  .items-table td { text-align: left; vertical-align: middle; }
+  .items-table td.center { text-align: center; }
+  .items-table tbody tr:nth-child(even) { background: #eff6ff; }
+
+  .sig-section { margin-top: 12px; display: grid; grid-template-columns: 1fr 1fr 1fr; border: 1px solid #000; }
+  .sig-cell { padding: 6px 8px; border-right: 1px solid #000; min-height: 60px; }
+  .sig-cell:last-child { border-right: none; }
+  .sig-label { font-size: 9pt; font-weight: bold; border-bottom: 1px solid #ccc; padding-bottom: 3px; margin-bottom: 4px; }
+  .sig-date { font-size: 8pt; color: #666; margin-top: 4px; }
+  .sig-name { border-top: 1px solid #000; margin-top: 24px; padding-top: 3px; font-size: 8pt; text-align: center; color: #555; }
+
+  .doc-footer { margin-top: 6px; display: flex; justify-content: space-between; font-size: 7.5pt; color: #888; border-top: 1px solid #ddd; padding-top: 4px; }
+  .doc-block + .doc-block { margin-top: 20mm; page-break-before: always; }
+</style>
+</head>
+<body>
+
+<div class="no-print">
+  <a href="{% url 'docs' %}?tab=issuance{% if search %}&search={{ search }}{% endif %}">← Back to DOCS</a>
+  <button onclick="window.print()">🖨️ Print</button>
+  <span style="color:#bfdbfe;font-size:0.82rem;">
+    Inventory Issuance{% if doc_ref %} — {{ doc_ref }}{% endif %}
+    {% if search %} | Filter: "{{ search }}"{% endif %}
+  </span>
+</div>
+
+<div class="page">
+{% for doc_ref, items in groups.items %}
+<div class="doc-block">
+
+  <div class="doc-header">
+    <div class="doc-logo">
+      <img src="data:image/jpeg;base64,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" alt="Delta Earthmoving Inc.">
+    </div>
+    <div class="doc-title">
+      <h1>CIT INVENTORY ISSUANCE</h1>
+      <h2>Computer &amp; IT Department</h2>
+    </div>
+    <div class="doc-meta">
+      <table>
+        <tr><td>II NO.:</td><td><strong>{{ doc_ref }}</strong></td></tr>
+        <tr><td>Date:</td><td>{{ items.0.purchase_date|date:"M d, Y"|default:"—" }}</td></tr>
+        <tr><td>Doc. Nos.:</td><td>{{ doc_ref }}</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="info-row">
+    <div class="info-cell"><span class="info-label">Destination Person:</span> {{ items.0.assigned_person|default:"—" }}</div>
+    <div class="info-cell"><span class="info-label">Company / Site-Dep't:</span> {{ items.0.department|default:"—" }}{% if items.0.project_site %} — {{ items.0.project_site }}{% endif %}</div>
+  </div>
+
+  <table class="items-table">
+    <thead>
+      <tr>
+        <th style="width:30px;">No.</th>
+        <th style="width:90px;">Asset ID / CIT</th>
+        <th>Item Description — Serial No.</th>
+        <th style="width:60px;">Quantity</th>
+        <th style="width:45px;">UOM</th>
+        <th>Remarks</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in items %}
+      <tr>
+        <td class="center">{{ forloop.counter }}</td>
+        <td class="center">{{ item.asset_tag|default:"—" }}</td>
+        <td>
+          <strong>{{ item.brand|default:"" }} {{ item.model|default:"" }}</strong>
+          {% if item.serial_number %}<br><span style="font-family:monospace;font-size:8pt;color:#555;">S/N: {{ item.serial_number }}</span>{% endif %}
+          {% if item.type %}<span style="color:#777;font-size:8pt;"> | {{ item.type }}</span>{% endif %}
+        </td>
+        <td class="center">1</td>
+        <td class="center">pc</td>
+        <td>{{ item.remarks|default:"—"|truncatechars:60 }}</td>
+      </tr>
+      {% endfor %}
+      {% if items|length < 10 %}
+        {% for i in "1234567890"|make_list %}{% if forloop.counter > items|length %}
+        <tr><td>&nbsp;</td><td></td><td></td><td></td><td></td><td></td></tr>
+        {% endif %}{% endfor %}
+      {% endif %}
+    </tbody>
+  </table>
+
+  <div class="sig-section">
+    <div class="sig-cell">
+      <div class="sig-label">Picked-up by / Signature / Date:</div>
+      <div class="sig-date">(DATE)</div>
+      <div class="sig-name">(NAME)</div>
+    </div>
+    <div class="sig-cell">
+      <div class="sig-label">Released by / Signature / Date (CIT):</div>
+      <div class="sig-date">(DATE)</div>
+      <div class="sig-name">(NAME)</div>
+    </div>
+    <div class="sig-cell">
+      <div class="sig-label">Noted by / Signature / Date (CIT Head):</div>
+      <div class="sig-date">(DATE)</div>
+      <div class="sig-name">(NAME)</div>
+    </div>
+  </div>
+
+  <div class="doc-footer">
+    <span>F-CIT-002b</span>
+    <span>Rev. 1 06/28/2024</span>
+  </div>
+
+</div>
+{% empty %}
+<p style="padding:40px;text-align:center;color:#888;">No inventory issuance documents found.</p>
+{% endfor %}
+</div>
+
+</body>
+</html>

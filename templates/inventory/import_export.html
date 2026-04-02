@@ -1,0 +1,334 @@
+{% extends 'inventory/base.html' %}
+{% block title %}Import / Export — Inventory System{% endblock %}
+{% block page_title %}Import / Export{% endblock %}
+{% block content %}
+
+<!-- ── Tab Nav ── -->
+<ul class="nav nav-pills gap-2 mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'upload' %}active{% endif %}"
+       href="{% url 'import_export' %}?tab=upload">
+      <i class="bi bi-file-earmark-arrow-up me-1"></i>Upload Excel
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'download' %}active{% endif %}"
+       href="{% url 'import_export' %}?tab=download">
+      <i class="bi bi-file-earmark-arrow-down me-1"></i>Download / Export
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if active_tab == 'history' %}active{% endif %}"
+       href="{% url 'import_export' %}?tab=history">
+      <i class="bi bi-clock-history me-1"></i>Import History
+    </a>
+  </li>
+</ul>
+
+<!-- ══════════════ UPLOAD TAB ══════════════ -->
+{% if active_tab == 'upload' %}
+<div class="row g-4">
+
+  <!-- Upload Card -->
+  <div class="col-md-7">
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-1" style="color:#1a2b4a;"><i class="bi bi-cloud-upload me-2 text-primary"></i>Upload Inventory Excel</h5>
+        <p class="text-muted small mb-4">Upload an Excel file to import inventory items. The system will auto-detect the format and sync items into their correct categories and classifications.</p>
+
+        <form method="post" action="{% url 'upload_excel' %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          <div class="mb-4">
+            <!-- Drop zone -->
+            <div id="dropZone" class="border-2 border-dashed rounded-3 p-5 text-center"
+                 style="border:2px dashed #cbd5e1;background:#f8fafc;cursor:pointer;transition:all .2s;"
+                 onclick="document.getElementById('excelFileInput').click()"
+                 ondragover="event.preventDefault();this.style.borderColor='#2563eb';this.style.background='#eff6ff';"
+                 ondragleave="this.style.borderColor='#cbd5e1';this.style.background='#f8fafc';"
+                 ondrop="handleDrop(event)">
+              <i class="bi bi-file-earmark-spreadsheet fs-1 text-success d-block mb-2"></i>
+              <div class="fw-semibold" style="color:#1a2b4a;">Drag & drop your Excel file here</div>
+              <div class="text-muted small mt-1">or click to browse — supports .xlsx, .xlsm</div>
+              <div id="fileNameDisplay" class="mt-3 text-primary fw-semibold small" style="display:none;"></div>
+            </div>
+            <input type="file" id="excelFileInput" name="excel_file" accept=".xlsx,.xlsm" class="d-none"
+                   onchange="showFileName(this)">
+          </div>
+
+          <div class="d-flex gap-3 align-items-center">
+            <button type="submit" class="btn btn-primary px-4" id="uploadBtn" disabled>
+              <i class="bi bi-upload me-2"></i>Import Now
+            </button>
+            <span class="text-muted small">Items will be appended to the existing inventory.</span>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info / Instructions Card -->
+  <div class="col-md-5">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3" style="color:#1a2b4a;"><i class="bi bi-info-circle me-2 text-info"></i>How It Works</h6>
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0 text-white fw-bold" style="width:28px;height:28px;font-size:0.8rem;">1</div>
+          <div>
+            <div class="fw-semibold small" style="color:#1a2b4a;">Download the Template</div>
+            <div class="text-muted" style="font-size:0.8rem;">Get the official template from the Download tab with all required columns pre-configured.</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0 text-white fw-bold" style="width:28px;height:28px;font-size:0.8rem;">2</div>
+          <div>
+            <div class="fw-semibold small" style="color:#1a2b4a;">Fill In Your Data</div>
+            <div class="text-muted" style="font-size:0.8rem;">Add all inventory items to the "All Items" sheet. Use dropdown columns for Category, Classification, and Status.</div>
+          </div>
+        </div>
+        <div class="d-flex gap-3 mb-3">
+          <div class="rounded-circle bg-primary d-flex align-items-center justify-content-center flex-shrink-0 text-white fw-bold" style="width:28px;height:28px;font-size:0.8rem;">3</div>
+          <div>
+            <div class="fw-semibold small" style="color:#1a2b4a;">Upload & Sync</div>
+            <div class="text-muted" style="font-size:0.8rem;">Upload the file here. The system automatically sorts each item into the correct Category and Classification tab.</div>
+          </div>
+        </div>
+        <hr class="my-3">
+        <div class="rounded-3 p-3" style="background:#fef3c7;">
+          <div class="fw-semibold small text-warning-emphasis mb-1"><i class="bi bi-exclamation-triangle me-1"></i>Required Columns</div>
+          <div class="text-muted" style="font-size:0.78rem;">
+            <span class="badge bg-danger me-1 mb-1">Category *</span>
+            <span class="badge bg-danger me-1 mb-1">Classification *</span>
+            <span class="badge bg-secondary me-1 mb-1">Status (optional)</span>
+          </div>
+          <div class="mt-2" style="font-size:0.78rem;color:#92400e;">
+            Valid Categories: Desktop, Laptop, Printer, Security, Network Devices, Electrical Devices, Tools, Telephony, Display
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Messages -->
+{% if messages %}
+<div class="mt-4">
+  {% for msg in messages %}
+  <div class="alert alert-{{ msg.tags }} d-flex align-items-start gap-2" style="border-radius:10px;">
+    <i class="bi {% if msg.tags == 'success' %}bi-check-circle-fill{% elif msg.tags == 'error' %}bi-x-circle-fill{% else %}bi-info-circle-fill{% endif %} mt-1"></i>
+    <div>{{ msg }}</div>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- ══════════════ DOWNLOAD TAB ══════════════ -->
+{% elif active_tab == 'download' %}
+<div class="row g-4">
+
+  <!-- Download Template -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #2563eb!important;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#eff6ff;">
+            <i class="bi bi-file-earmark-spreadsheet fs-3 text-primary"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0" style="color:#1a2b4a;">Upload Template</h5>
+            <div class="text-muted small">Pre-configured with dropdowns & sample data</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-4">Download the official inventory template with all columns, dropdown validation for Category/Classification/Status, and sample rows to guide your data entry.</p>
+        <div class="mb-3 p-3 rounded-3" style="background:#f0fdf4;border:1px solid #bbf7d0;">
+          <div class="small fw-semibold text-success mb-1"><i class="bi bi-check-circle me-1"></i>Included in template:</div>
+          <ul class="text-muted small mb-0" style="padding-left:1.2rem;">
+            <li>All 21 inventory fields</li>
+            <li>Category dropdown (9 options)</li>
+            <li>Classification dropdown (Components / Parts)</li>
+            <li>Status dropdown (5 options)</li>
+            <li>9 sample rows across all categories</li>
+            <li>Instructions sheet</li>
+          </ul>
+        </div>
+        <a href="{% url 'download_excel_template' %}" class="btn btn-primary w-100">
+          <i class="bi bi-download me-2"></i>Download Upload Template (.xlsx)
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Export Current Inventory -->
+  <div class="col-md-6">
+    <div class="card border-0 shadow-sm h-100" style="border-radius:14px;border-left:4px solid #10b981!important;">
+      <div class="card-body p-4">
+        <div class="d-flex align-items-center gap-3 mb-3">
+          <div class="rounded-3 d-flex align-items-center justify-content-center" style="width:52px;height:52px;background:#f0fdf4;">
+            <i class="bi bi-file-earmark-arrow-down fs-3 text-success"></i>
+          </div>
+          <div>
+            <h5 class="fw-bold mb-0" style="color:#1a2b4a;">Export Inventory</h5>
+            <div class="text-muted small">Download current data as Excel</div>
+          </div>
+        </div>
+        <p class="text-muted small mb-3">Export the full inventory or apply filters below before exporting.</p>
+
+        <form method="get" action="{% url 'export_excel' %}">
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label">Category</label>
+              <select name="category" class="form-select form-select-sm">
+                <option value="">All Categories</option>
+                <option>Desktop</option><option>Laptop</option><option>Printer</option>
+                <option>Security</option><option>Network Devices</option>
+                <option>Electrical Devices</option><option>Tools</option>
+                <option>Telephony</option><option>Display</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Status</label>
+              <select name="status" class="form-select form-select-sm">
+                <option value="">All Statuses</option>
+                <option>Active</option><option>Inactive</option>
+                <option>Under Repair</option><option>For Repair</option><option>Disposed</option>
+              </select>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Department</label>
+              <input type="text" name="department" class="form-control form-control-sm" placeholder="Filter by dept...">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Search</label>
+              <input type="text" name="search" class="form-control form-control-sm" placeholder="Brand, model, tag...">
+            </div>
+          </div>
+          <button type="submit" class="btn btn-success w-100">
+            <i class="bi bi-download me-2"></i>Export Filtered Data (.xlsx)
+          </button>
+        </form>
+        <div class="mt-2 text-center text-muted" style="font-size:0.78rem;">
+          <i class="bi bi-info-circle me-1"></i>Total records in system: <strong>{{ total }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ HISTORY TAB ══════════════ -->
+{% elif active_tab == 'history' %}
+<div class="row g-4">
+  <div class="col-12">
+
+    <!-- Summary Row -->
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-radius:12px;background:linear-gradient(135deg,#1a2b4a,#2563eb);">
+          <div class="text-white-50 small">Total Items</div>
+          <div class="text-white fw-bold fs-3">{{ total }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-radius:12px;background:linear-gradient(135deg,#065f46,#10b981);">
+          <div class="text-white-50 small">Import Batches</div>
+          <div class="text-white fw-bold fs-3">{{ batches|length }}</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card border-0 shadow-sm p-3" style="border-radius:12px;background:linear-gradient(135deg,#374151,#6b7280);">
+          <div class="text-white-50 small">Manually Added</div>
+          <div class="text-white fw-bold fs-3">{{ manual_count }}</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Batch Table -->
+    <div class="card border-0 shadow-sm" style="border-radius:14px;">
+      <div class="card-body p-0">
+        <div class="px-4 pt-4 pb-2 d-flex justify-content-between align-items-center">
+          <h6 class="fw-bold mb-0" style="color:#1a2b4a;"><i class="bi bi-clock-history me-2"></i>Import Batch History</h6>
+        </div>
+        {% if batches %}
+        <div style="overflow-x:auto;">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>Batch ID</th>
+                <th>Items Imported</th>
+                <th>Imported At</th>
+                <th style="width:130px;">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in batches %}
+              <tr>
+                <td><code style="font-size:0.78rem;color:#1a2b4a;">{{ b.import_batch }}</code></td>
+                <td><span class="badge bg-primary bg-opacity-10 text-primary px-3">{{ b.count }} items</span></td>
+                <td class="text-muted small">{{ b.imported_at|date:"N j, Y g:i A" }}</td>
+                <td>
+                  <form method="post" action="{% url 'delete_import_batch' b.import_batch %}"
+                        onsubmit="return confirm('Delete all {{ b.count }} items from this batch?')">
+                    {% csrf_token %}
+                    <button class="btn btn-outline-danger btn-sm" style="font-size:0.75rem;">
+                      <i class="bi bi-trash me-1"></i>Delete Batch
+                    </button>
+                  </form>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5 text-muted">
+          <i class="bi bi-inbox fs-2 d-block mb-2 opacity-25"></i>
+          No import batches yet. Upload an Excel file to get started.
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Danger Zone: Delete All -->
+    <div class="card border-0 shadow-sm mt-4" style="border-radius:14px;border:1px solid #fecaca!important;">
+      <div class="card-body p-4">
+        <h6 class="fw-bold text-danger mb-1"><i class="bi bi-exclamation-triangle me-2"></i>Danger Zone</h6>
+        <p class="text-muted small mb-3">Permanently delete ALL inventory items from the system. This action cannot be undone.</p>
+        <form method="post" action="{% url 'delete_all_items' %}"
+              onsubmit="return confirm('Are you SURE? This will permanently delete ALL {{ total }} inventory items!')">
+          {% csrf_token %}
+          <button class="btn btn-outline-danger btn-sm">
+            <i class="bi bi-trash3 me-1"></i>Delete All Items ({{ total }})
+          </button>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endif %}
+
+<script>
+function showFileName(input) {
+  if (input.files.length > 0) {
+    const display = document.getElementById('fileNameDisplay');
+    display.textContent = '📄 ' + input.files[0].name;
+    display.style.display = 'block';
+    document.getElementById('dropZone').style.borderColor = '#10b981';
+    document.getElementById('dropZone').style.background = '#f0fdf4';
+    document.getElementById('uploadBtn').disabled = false;
+  }
+}
+
+function handleDrop(event) {
+  event.preventDefault();
+  document.getElementById('dropZone').style.borderColor = '#cbd5e1';
+  document.getElementById('dropZone').style.background = '#f8fafc';
+  const files = event.dataTransfer.files;
+  if (files.length > 0) {
+    const input = document.getElementById('excelFileInput');
+    const dt = new DataTransfer();
+    dt.items.add(files[0]);
+    input.files = dt.files;
+    showFileName(input);
+  }
+}
+</script>
+{% endblock %}

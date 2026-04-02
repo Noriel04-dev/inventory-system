@@ -1,0 +1,876 @@
+{% extends 'inventory/base.html' %}
+{% block title %}DOCS — Inventory System{% endblock %}
+{% block page_title %}DOCS{% endblock %}
+{% block content %}
+
+<style>
+  /* ── Tab buttons ── */
+  .doc-tab-btn {
+    border: 2px solid transparent; background: #f1f5f9; color: #64748b;
+    padding: 10px 24px; border-radius: 10px; font-size: 0.85rem;
+    font-weight: 600; cursor: pointer; transition: all .2s; white-space: nowrap;
+    text-decoration: none; display: inline-flex; align-items: center;
+  }
+  .doc-tab-btn.active { background: #1a2b4a; color: #fff; box-shadow: 0 4px 12px rgba(26,43,74,0.25); }
+  .doc-tab-btn:hover:not(.active) { background: #e2e8f0; color: #1a2b4a; border-color: #cbd5e1; }
+  .doc-tab-btn .badge-count {
+    background: rgba(255,255,255,0.25); color: inherit;
+    border-radius: 20px; padding: 1px 8px; font-size: 0.72rem; margin-left: 6px;
+  }
+  .doc-tab-btn:not(.active) .badge-count { background: #cbd5e1; color: #475569; }
+
+  /* Tab add-new highlight */
+  .tab-receipt.active  { background: linear-gradient(135deg,#065f46,#10b981) !important; border-color: #10b981; }
+  .tab-issuance.active { background: linear-gradient(135deg,#1e40af,#3b82f6) !important; border-color: #3b82f6; }
+  .tab-workorder.active{ background: linear-gradient(135deg,#7c2d12,#f97316) !important; border-color: #f97316; }
+
+  /* ── Cards ── */
+  .doc-group-card { border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 18px; }
+  .doc-group-header {
+    color: #fff; padding: 10px 18px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .tab-receipt .doc-group-header   { background: linear-gradient(90deg,#065f46,#10b981); }
+  .tab-issuance .doc-group-header  { background: linear-gradient(90deg,#1e40af,#3b82f6); }
+  .tab-workorder .doc-group-header { background: linear-gradient(90deg,#7c2d12,#f97316); }
+  .doc-group-header .doc-ref { font-weight: 700; font-size: 0.95rem; letter-spacing: 0.5px; }
+  .doc-count { background: rgba(255,255,255,0.2); border-radius: 20px; padding: 2px 12px; font-size: 0.75rem; }
+
+  .doc-group-table { margin: 0; font-size: 0.81rem; }
+  .doc-group-table thead th {
+    background: #f8fafc; color: #475569; font-weight: 600; font-size: 0.75rem;
+    text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 1px solid #e2e8f0; padding: 8px 14px;
+  }
+  .doc-group-table tbody td { padding: 9px 14px; vertical-align: middle; border-color: #f1f5f9; background: #fff; }
+  .doc-group-table tbody tr:hover td { background: #f0f6ff; }
+
+  /* ── Buttons inside card header ── */
+  .btn-card-action {
+    background: rgba(255,255,255,0.18); border: 1px solid rgba(255,255,255,0.4);
+    color: #fff; border-radius: 7px; padding: 4px 13px; font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; transition: background .15s; text-decoration: none;
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .btn-card-action:hover { background: rgba(255,255,255,0.32); color: #fff; }
+
+  .btn-print-all {
+    background: #1a2b4a; color: #fff; border: none; border-radius: 8px;
+    padding: 7px 16px; font-size: 0.82rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+    text-decoration: none; transition: background .2s; cursor: pointer;
+  }
+  .btn-print-all:hover { background: #2563eb; color: #fff; }
+
+  /* ── New Entry button ── */
+  .btn-new-doc {
+    border: none; border-radius: 10px; padding: 10px 22px; font-size: 0.85rem;
+    font-weight: 700; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
+    transition: all .2s; text-decoration: none; white-space: nowrap;
+  }
+  .btn-new-ir { background: linear-gradient(135deg,#065f46,#10b981); color: #fff; }
+  .btn-new-ir:hover { opacity: .88; color: #fff; }
+  .btn-new-ii { background: linear-gradient(135deg,#1e40af,#3b82f6); color: #fff; }
+  .btn-new-ii:hover { opacity: .88; color: #fff; }
+  .btn-new-wo { background: linear-gradient(135deg,#7c2d12,#f97316); color: #fff; }
+  .btn-new-wo:hover { opacity: .88; color: #fff; }
+
+  /* ── Modal ── */
+  .doc-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.55); z-index: 1050;
+    align-items: center; justify-content: center;
+  }
+  .doc-modal-overlay.show { display: flex; }
+  .doc-modal {
+    background: #fff; border-radius: 16px; width: 780px; max-width: 96vw;
+    max-height: 90vh; overflow-y: auto;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    animation: modalIn .2s ease;
+  }
+  @keyframes modalIn { from { transform: translateY(-20px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .doc-modal-header {
+    padding: 18px 24px 14px; border-radius: 16px 16px 0 0;
+    display: flex; align-items: center; justify-content: space-between; color: #fff;
+  }
+  .doc-modal-header h5 { margin: 0; font-size: 1.05rem; font-weight: 700; }
+  .doc-modal-header.ir-header { background: linear-gradient(135deg,#065f46,#10b981); }
+  .doc-modal-header.ii-header { background: linear-gradient(135deg,#1e40af,#3b82f6); }
+  .doc-modal-header.wo-header { background: linear-gradient(135deg,#7c2d12,#f97316); }
+  .modal-close-btn {
+    background: rgba(255,255,255,0.2); border: none; color: #fff;
+    width: 30px; height: 30px; border-radius: 50%; font-size: 1.1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background .15s;
+  }
+  .modal-close-btn:hover { background: rgba(255,255,255,0.38); }
+  .doc-modal-body { padding: 20px 24px; }
+  .doc-modal-footer {
+    padding: 14px 24px; border-top: 1px solid #e2e8f0;
+    display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc;
+    border-radius: 0 0 16px 16px;
+  }
+
+  /* ── Form sections ── */
+  .form-section { margin-bottom: 18px; }
+  .form-section-title {
+    font-size: 0.72rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: #94a3b8; margin-bottom: 10px;
+    padding-bottom: 5px; border-bottom: 1px solid #e2e8f0;
+  }
+  .form-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .form-grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .form-grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+  .form-label { font-size: 0.78rem; font-weight: 600; color: #374151; margin-bottom: 3px; }
+  .required-star { color: #ef4444; }
+
+  /* ── Toast ── */
+  .doc-toast {
+    position: fixed; bottom: 24px; right: 24px; z-index: 9999;
+    background: #065f46; color: #fff; border-radius: 10px;
+    padding: 12px 20px; font-size: 0.85rem; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 8px;
+    transform: translateY(80px); opacity: 0; transition: all .3s;
+  }
+  .doc-toast.show { transform: none; opacity: 1; }
+  .doc-toast.error { background: #991b1b; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+  .empty-state i { font-size: 3rem; display: block; margin-bottom: 12px; opacity: .35; }
+  .empty-state .btn-add-first { margin-top: 16px; }
+
+  @media print {
+    .sidebar,.topbar,.search-bar-area,.doc-tab-nav,.btn-card-action,.btn-print-all,.btn-new-doc { display:none!important; }
+    .main-content { margin-left:0!important; padding:0!important; }
+  }
+</style>
+
+<!-- ── Search Bar ── -->
+<div class="search-bar-area mb-4">
+  <div class="card border-0 shadow-sm" style="border-radius:14px;">
+    <div class="card-body py-3 px-4">
+      <form method="get" class="d-flex gap-3 align-items-end flex-wrap">
+        <input type="hidden" name="tab" value="{{ tab }}">
+        <div style="flex:1;min-width:260px;">
+          <label class="form-label mb-1"><i class="bi bi-search me-1"></i>Search Documents</label>
+          <div class="input-group">
+            <span class="input-group-text bg-light border-end-0"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" name="search" id="searchInput" value="{{ search }}"
+                   class="form-control border-start-0 ps-0"
+                   placeholder="Asset tag, ID number, assigned person, brand, model…" autofocus>
+            {% if search %}
+            <a href="{% url 'docs' %}?tab={{ tab }}" class="btn btn-outline-secondary"><i class="bi bi-x-lg"></i></a>
+            {% endif %}
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary px-4"><i class="bi bi-search me-1"></i>Search</button>
+        {% if search %}
+        <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 align-self-center" style="font-size:0.82rem;">
+          <i class="bi bi-filter me-1"></i>Filtered: "{{ search }}"
+        </span>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ── Tab Nav ── -->
+<div class="doc-tab-nav d-flex gap-2 mb-4 flex-wrap align-items-center">
+  <a href="{% url 'docs' %}?tab=receipt{% if search %}&search={{ search }}{% endif %}"
+     class="doc-tab-btn tab-receipt {% if tab == 'receipt' %}active{% endif %}">
+    <i class="bi bi-receipt me-1"></i>Inventory Receipt
+    <span class="badge-count">{{ receipt_count }}</span>
+  </a>
+  <a href="{% url 'docs' %}?tab=issuance{% if search %}&search={{ search }}{% endif %}"
+     class="doc-tab-btn tab-issuance {% if tab == 'issuance' %}active{% endif %}">
+    <i class="bi bi-box-arrow-up-right me-1"></i>Inventory Issuance
+    <span class="badge-count">{{ issuance_count }}</span>
+  </a>
+  <a href="{% url 'docs' %}?tab=workorder{% if search %}&search={{ search }}{% endif %}"
+     class="doc-tab-btn tab-workorder {% if tab == 'workorder' %}active{% endif %}">
+    <i class="bi bi-tools me-1"></i>Work Order
+    <span class="badge-count">{{ workorder_count }}</span>
+  </a>
+
+  <div class="ms-auto d-flex align-items-center gap-2">
+    {% if tab == 'receipt' %}
+      <button class="btn-new-doc btn-new-ir" onclick="openModal('ir')">
+        <i class="bi bi-plus-circle-fill"></i> New Inventory Receipt
+      </button>
+      <a href="{% url 'print_doc' %}?doc_type=ir{% if search %}&search={{ search }}{% endif %}" target="_blank" class="btn-print-all">
+        <i class="bi bi-printer-fill"></i> Print All
+      </a>
+    {% elif tab == 'issuance' %}
+      <button class="btn-new-doc btn-new-ii" onclick="openModal('ii')">
+        <i class="bi bi-plus-circle-fill"></i> New Inventory Issuance
+      </button>
+      <a href="{% url 'print_doc' %}?doc_type=ii{% if search %}&search={{ search }}{% endif %}" target="_blank" class="btn-print-all">
+        <i class="bi bi-printer-fill"></i> Print All
+      </a>
+    {% elif tab == 'workorder' %}
+      <button class="btn-new-doc btn-new-wo" onclick="openModal('wo')">
+        <i class="bi bi-plus-circle-fill"></i> New Work Order
+      </button>
+      <a href="{% url 'print_doc' %}?doc_type=wo{% if search %}&search={{ search }}{% endif %}" target="_blank" class="btn-print-all">
+        <i class="bi bi-printer-fill"></i> Print All
+      </a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══════════ RECEIPT TAB ══════════ -->
+{% if tab == 'receipt' %}
+  {% if receipt_groups %}
+    {% for doc_ref, items in receipt_groups.items %}
+    <div class="doc-group-card tab-receipt">
+      <div class="doc-group-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-receipt"></i>
+          <span class="doc-ref">Receipt No: {{ doc_ref }}</span>
+          <span class="doc-count">{{ items|length }} item{{ items|length|pluralize }}</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-card-action" onclick="openModal('ir','{{ doc_ref }}')">
+            <i class="bi bi-plus"></i> Add Item
+          </button>
+          <a href="{% url 'print_doc' %}?doc_type=ir&doc_ref={{ doc_ref|urlencode }}{% if search %}&search={{ search }}{% endif %}"
+             target="_blank" class="btn-card-action">
+            <i class="bi bi-printer"></i> Print
+          </a>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table doc-group-table">
+          <thead><tr>
+            <th>#</th><th>ID Number</th><th>Asset Tag</th><th>Brand</th><th>Model</th>
+            <th>Serial No.</th><th>Type</th><th>Category</th><th>Classification</th>
+            <th>Assigned Person</th><th>Department</th><th>Project Site</th>
+            <th>PO</th><th>Purchase Date</th><th>Status</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><strong>{{ item.id_number|default:"—" }}</strong></td>
+              <td><span class="badge bg-success bg-opacity-10 text-success">{{ item.asset_tag|default:"—" }}</span></td>
+              <td>{{ item.brand|default:"—" }}</td>
+              <td>{{ item.model|default:"—" }}</td>
+              <td style="font-family:monospace;font-size:0.78rem;">{{ item.serial_number|default:"—" }}</td>
+              <td>{{ item.type|default:"—" }}</td>
+              <td><span class="badge bg-light text-dark">{{ item.category }}</span></td>
+              <td><span class="badge bg-info bg-opacity-10 text-info">{{ item.classification }}</span></td>
+              <td><i class="bi bi-person-fill text-muted me-1"></i>{{ item.assigned_person|default:"—" }}</td>
+              <td>{{ item.department|default:"—" }}</td>
+              <td>{{ item.project_site|default:"—" }}</td>
+              <td>{{ item.po|default:"—" }}</td>
+              <td>{{ item.purchase_date|date:"M d, Y"|default:"—" }}</td>
+              <td><span class="status-badge badge-status-{{ item.status|cut:' ' }}">{{ item.status }}</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                        onclick="openEditModal('ir', {{ item.pk }})" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="bi bi-receipt"></i>
+      <div class="fw-semibold mb-1">
+        {% if search %}No receipts found for "{{ search }}"{% else %}No Inventory Receipts yet{% endif %}
+      </div>
+      <div class="small text-muted">
+        {% if search %}Try a different search term.{% else %}Click the button below to create your first receipt.{% endif %}
+      </div>
+      {% if not search %}
+      <button class="btn-new-doc btn-new-ir btn-add-first mt-3" onclick="openModal('ir')">
+        <i class="bi bi-plus-circle-fill"></i> Create First Inventory Receipt
+      </button>
+      {% endif %}
+    </div>
+  {% endif %}
+
+<!-- ══════════ ISSUANCE TAB ══════════ -->
+{% elif tab == 'issuance' %}
+  {% if issuance_groups %}
+    {% for doc_ref, items in issuance_groups.items %}
+    <div class="doc-group-card tab-issuance">
+      <div class="doc-group-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-box-arrow-up-right"></i>
+          <span class="doc-ref">Issuance No: {{ doc_ref }}</span>
+          <span class="doc-count">{{ items|length }} item{{ items|length|pluralize }}</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-card-action" onclick="openModal('ii','{{ doc_ref }}')">
+            <i class="bi bi-plus"></i> Add Item
+          </button>
+          <a href="{% url 'print_doc' %}?doc_type=ii&doc_ref={{ doc_ref|urlencode }}{% if search %}&search={{ search }}{% endif %}"
+             target="_blank" class="btn-card-action">
+            <i class="bi bi-printer"></i> Print
+          </a>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table doc-group-table">
+          <thead><tr>
+            <th>#</th><th>ID Number</th><th>Asset Tag</th><th>Brand</th><th>Model</th>
+            <th>Serial No.</th><th>Type</th><th>Category</th><th>Classification</th>
+            <th>Assigned Person</th><th>Department</th><th>Project Site</th>
+            <th>Remarks</th><th>Status</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><strong>{{ item.id_number|default:"—" }}</strong></td>
+              <td><span class="badge bg-primary bg-opacity-10 text-primary">{{ item.asset_tag|default:"—" }}</span></td>
+              <td>{{ item.brand|default:"—" }}</td>
+              <td>{{ item.model|default:"—" }}</td>
+              <td style="font-family:monospace;font-size:0.78rem;">{{ item.serial_number|default:"—" }}</td>
+              <td>{{ item.type|default:"—" }}</td>
+              <td><span class="badge bg-light text-dark">{{ item.category }}</span></td>
+              <td><span class="badge bg-info bg-opacity-10 text-info">{{ item.classification }}</span></td>
+              <td><i class="bi bi-person-fill text-muted me-1"></i>{{ item.assigned_person|default:"—" }}</td>
+              <td>{{ item.department|default:"—" }}</td>
+              <td>{{ item.project_site|default:"—" }}</td>
+              <td>{{ item.remarks|truncatechars:40|default:"—" }}</td>
+              <td><span class="status-badge badge-status-{{ item.status|cut:' ' }}">{{ item.status }}</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                        onclick="openEditModal('ii', {{ item.pk }})" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="bi bi-box-arrow-up-right"></i>
+      <div class="fw-semibold mb-1">
+        {% if search %}No issuances found for "{{ search }}"{% else %}No Inventory Issuances yet{% endif %}
+      </div>
+      <div class="small text-muted">
+        {% if search %}Try a different search term.{% else %}Click below to create your first issuance.{% endif %}
+      </div>
+      {% if not search %}
+      <button class="btn-new-doc btn-new-ii btn-add-first mt-3" onclick="openModal('ii')">
+        <i class="bi bi-plus-circle-fill"></i> Create First Inventory Issuance
+      </button>
+      {% endif %}
+    </div>
+  {% endif %}
+
+<!-- ══════════ WORK ORDER TAB ══════════ -->
+{% elif tab == 'workorder' %}
+  {% if workorder_groups %}
+    {% for doc_ref, items in workorder_groups.items %}
+    <div class="doc-group-card tab-workorder">
+      <div class="doc-group-header">
+        <div class="d-flex align-items-center gap-2">
+          <i class="bi bi-tools"></i>
+          <span class="doc-ref">Work Order: {{ doc_ref }}</span>
+          <span class="doc-count">{{ items|length }} item{{ items|length|pluralize }}</span>
+        </div>
+        <div class="d-flex gap-2">
+          <button class="btn-card-action" onclick="openModal('wo','{{ doc_ref }}')">
+            <i class="bi bi-plus"></i> Add Item
+          </button>
+          <a href="{% url 'print_doc' %}?doc_type=wo&doc_ref={{ doc_ref|urlencode }}{% if search %}&search={{ search }}{% endif %}"
+             target="_blank" class="btn-card-action">
+            <i class="bi bi-printer"></i> Print
+          </a>
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="table doc-group-table">
+          <thead><tr>
+            <th>#</th><th>ID Number</th><th>Asset Tag</th><th>Brand</th><th>Model</th>
+            <th>Serial No.</th><th>Type</th><th>Category</th><th>Classification</th>
+            <th>Assigned Person</th><th>Department</th><th>Project Site</th>
+            <th>Ref. No.</th><th>Remarks</th><th>Status</th><th>Action</th>
+          </tr></thead>
+          <tbody>
+            {% for item in items %}
+            <tr>
+              <td class="text-muted">{{ forloop.counter }}</td>
+              <td><strong>{{ item.id_number|default:"—" }}</strong></td>
+              <td><span class="badge bg-warning bg-opacity-15 text-warning-emphasis">{{ item.asset_tag|default:"—" }}</span></td>
+              <td>{{ item.brand|default:"—" }}</td>
+              <td>{{ item.model|default:"—" }}</td>
+              <td style="font-family:monospace;font-size:0.78rem;">{{ item.serial_number|default:"—" }}</td>
+              <td>{{ item.type|default:"—" }}</td>
+              <td><span class="badge bg-light text-dark">{{ item.category }}</span></td>
+              <td><span class="badge bg-info bg-opacity-10 text-info">{{ item.classification }}</span></td>
+              <td><i class="bi bi-person-fill text-muted me-1"></i>{{ item.assigned_person|default:"—" }}</td>
+              <td>{{ item.department|default:"—" }}</td>
+              <td>{{ item.project_site|default:"—" }}</td>
+              <td>{{ item.reference_number|default:"—" }}</td>
+              <td>{{ item.remarks|truncatechars:40|default:"—" }}</td>
+              <td><span class="status-badge badge-status-{{ item.status|cut:' ' }}">{{ item.status }}</span></td>
+              <td>
+                <button class="btn btn-sm btn-outline-secondary py-0 px-2"
+                        onclick="openEditModal('wo', {{ item.pk }})" title="Edit">
+                  <i class="bi bi-pencil"></i>
+                </button>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <div class="empty-state">
+      <i class="bi bi-tools"></i>
+      <div class="fw-semibold mb-1">
+        {% if search %}No work orders found for "{{ search }}"{% else %}No Work Orders yet{% endif %}
+      </div>
+      <div class="small text-muted">
+        {% if search %}Try a different search term.{% else %}Click below to create your first work order.{% endif %}
+      </div>
+      {% if not search %}
+      <button class="btn-new-doc btn-new-wo btn-add-first mt-3" onclick="openModal('wo')">
+        <i class="bi bi-plus-circle-fill"></i> Create First Work Order
+      </button>
+      {% endif %}
+    </div>
+  {% endif %}
+{% endif %}
+
+
+<!-- ══════════════════════════════════════════════
+     MODAL — New / Edit Doc Item
+══════════════════════════════════════════════ -->
+<div class="doc-modal-overlay" id="docModalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="doc-modal" id="docModal">
+
+    <!-- Header (color changes per doc type) -->
+    <div class="doc-modal-header" id="modalHeader">
+      <div>
+        <div style="font-size:0.75rem;opacity:.8;" id="modalSubtitle">NEW ENTRY</div>
+        <h5 id="modalTitle">Inventory Receipt</h5>
+      </div>
+      <button class="modal-close-btn" onclick="closeModal()">✕</button>
+    </div>
+
+    <!-- Body -->
+    <div class="doc-modal-body">
+      <div id="modalErrorBox" class="alert alert-danger py-2 px-3 mb-3 d-none" style="font-size:0.83rem;border-radius:8px;"></div>
+
+      <!-- ── DOC REFERENCE SECTION ── -->
+      <div class="form-section">
+        <div class="form-section-title" id="docRefSectionTitle">📋 Receipt Information</div>
+        <div class="form-grid" id="docRefFields">
+          <!-- Filled by JS per doc type -->
+        </div>
+      </div>
+
+      <!-- ── ITEM IDENTIFICATION ── -->
+      <div class="form-section">
+        <div class="form-section-title">🏷️ Item Identification</div>
+        <div class="form-grid-4">
+          <div>
+            <label class="form-label">ID Number</label>
+            <input type="text" class="form-control form-control-sm" id="f_id_number" placeholder="e.g. CIT-0001">
+          </div>
+          <div>
+            <label class="form-label">Asset Tag</label>
+            <input type="text" class="form-control form-control-sm" id="f_asset_tag" placeholder="e.g. DEI-0001">
+          </div>
+          <div>
+            <label class="form-label">Computer Tag</label>
+            <input type="text" class="form-control form-control-sm" id="f_computer_tag">
+          </div>
+          <div>
+            <label class="form-label">Display Tag</label>
+            <input type="text" class="form-control form-control-sm" id="f_display_tag">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ITEM DETAILS ── -->
+      <div class="form-section">
+        <div class="form-section-title">📦 Item Details</div>
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Brand <span class="required-star">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="f_brand" placeholder="e.g. Dell, HP, Lenovo">
+          </div>
+          <div>
+            <label class="form-label">Model <span class="required-star">*</span></label>
+            <input type="text" class="form-control form-control-sm" id="f_model" placeholder="e.g. OptiPlex 7090">
+          </div>
+          <div>
+            <label class="form-label">Type</label>
+            <input type="text" class="form-control form-control-sm" id="f_type" placeholder="e.g. Desktop PC">
+          </div>
+          <div>
+            <label class="form-label">Serial Number</label>
+            <input type="text" class="form-control form-control-sm" id="f_serial_number" placeholder="S/N">
+          </div>
+          <div>
+            <label class="form-label">Category <span class="required-star">*</span></label>
+            <select class="form-select form-select-sm" id="f_category">
+              <option value="">— Select —</option>
+              <option>Desktop</option><option>Laptop</option><option>Printer</option>
+              <option>Security</option><option>Network Devices</option>
+              <option>Electrical Devices</option><option>Tools</option>
+              <option>Telephony</option><option>Display</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label">Classification <span class="required-star">*</span></label>
+            <select class="form-select form-select-sm" id="f_classification">
+              <option value="">— Select —</option>
+              <option>Components</option><option>Parts</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ASSIGNMENT ── -->
+      <div class="form-section">
+        <div class="form-section-title">👤 Assignment</div>
+        <div class="form-grid">
+          <div>
+            <label class="form-label">Assigned Person</label>
+            <input type="text" class="form-control form-control-sm" id="f_assigned_person" placeholder="Full name">
+          </div>
+          <div>
+            <label class="form-label">Department</label>
+            <input type="text" class="form-control form-control-sm" id="f_department" placeholder="e.g. CIT, HR">
+          </div>
+          <div>
+            <label class="form-label">Project Site</label>
+            <input type="text" class="form-control form-control-sm" id="f_project_site" placeholder="e.g. Main Office">
+          </div>
+        </div>
+      </div>
+
+      <!-- ── OTHER INFO ── -->
+      <div class="form-section">
+        <div class="form-section-title">📌 Other Information</div>
+        <div class="form-grid">
+          <div>
+            <label class="form-label">PO Number</label>
+            <input type="text" class="form-control form-control-sm" id="f_po" placeholder="Purchase Order No.">
+          </div>
+          <div>
+            <label class="form-label">Reference Number</label>
+            <input type="text" class="form-control form-control-sm" id="f_reference_number">
+          </div>
+          <div>
+            <label class="form-label">Purchase Date</label>
+            <input type="date" class="form-control form-control-sm" id="f_purchase_date">
+          </div>
+          <div>
+            <label class="form-label">Status</label>
+            <select class="form-select form-select-sm" id="f_status">
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+              <option value="Under Repair">Under Repair</option>
+              <option value="For Repair">For Repair</option>
+              <option value="Disposed">Disposed</option>
+            </select>
+          </div>
+          <div class="col-span-2" style="grid-column: span 2;">
+            <label class="form-label">Remarks</label>
+            <textarea class="form-control form-control-sm" id="f_remarks" rows="2" placeholder="Optional notes…"></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="doc-modal-footer">
+      <button class="btn btn-outline-secondary btn-sm px-4" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary btn-sm px-5" id="modalSaveBtn" onclick="saveDocItem()">
+        <i class="bi bi-check-lg me-1"></i> Save Entry
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="doc-toast" id="docToast"></div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const SAVE_URL   = "{% url 'save_doc_item' %}";
+const GETITEM_URL = "/item/";  // used as /item/{pk}/get/
+const CSRF       = "{{ csrf_token }}";
+const CURRENT_TAB = "{{ tab }}";
+
+let currentDocType = 'ir';
+let currentItemId  = null;
+
+// ── Doc type config ──────────────────────────────────────────
+const DOC_CONFIG = {
+  ir: {
+    title:     'Inventory Receipt',
+    subtitle:  'NEW ENTRY',
+    headerCls: 'ir-header',
+    sectionTitle: '📋 Receipt Information',
+    fields: `
+      <div>
+        <label class="form-label">IR Number <span class="required-star">*</span></label>
+        <input type="text" class="form-control form-control-sm" id="f_inventory_receipt" placeholder="e.g. IR-2024-001">
+      </div>
+      <div>
+        <label class="form-label">Doc. Nos.</label>
+        <input type="text" class="form-control form-control-sm" id="f_doc_nos_ir" placeholder="Document numbers">
+      </div>
+      <div>
+        <label class="form-label">Source Person</label>
+        <input type="text" class="form-control form-control-sm" id="f_source_person_ir" placeholder="Who delivered?">
+      </div>
+    `,
+  },
+  ii: {
+    title:     'Inventory Issuance',
+    subtitle:  'NEW ENTRY',
+    headerCls: 'ii-header',
+    sectionTitle: '📋 Issuance Information',
+    fields: `
+      <div>
+        <label class="form-label">II Number <span class="required-star">*</span></label>
+        <input type="text" class="form-control form-control-sm" id="f_inventory_issuance" placeholder="e.g. II-2024-001">
+      </div>
+      <div>
+        <label class="form-label">Doc. Nos.</label>
+        <input type="text" class="form-control form-control-sm" id="f_doc_nos_ii" placeholder="Document numbers">
+      </div>
+      <div>
+        <label class="form-label">Destination Person</label>
+        <input type="text" class="form-control form-control-sm" id="f_dest_person_ii" placeholder="Who receives?">
+      </div>
+    `,
+  },
+  wo: {
+    title:     'Work Order',
+    subtitle:  'NEW ENTRY',
+    headerCls: 'wo-header',
+    sectionTitle: '📋 Work Order Information',
+    fields: `
+      <div>
+        <label class="form-label">WO Number <span class="required-star">*</span></label>
+        <input type="text" class="form-control form-control-sm" id="f_work_order" placeholder="e.g. WO-2024-001">
+      </div>
+      <div>
+        <label class="form-label">Ticket ID</label>
+        <input type="text" class="form-control form-control-sm" id="f_ticket_id" placeholder="Ticket reference">
+      </div>
+      <div>
+        <label class="form-label">Date Needed</label>
+        <input type="date" class="form-control form-control-sm" id="f_date_needed">
+      </div>
+    `,
+  },
+};
+
+// ── Open new modal ───────────────────────────────────────────
+function openModal(docType, prefillRef = '') {
+  currentDocType = docType;
+  currentItemId  = null;
+  const cfg = DOC_CONFIG[docType];
+
+  // Set header
+  document.getElementById('modalHeader').className = 'doc-modal-header ' + cfg.headerCls;
+  document.getElementById('modalTitle').textContent   = cfg.title;
+  document.getElementById('modalSubtitle').textContent = 'NEW ENTRY';
+  document.getElementById('docRefSectionTitle').textContent = cfg.sectionTitle;
+  document.getElementById('docRefFields').innerHTML = cfg.fields;
+  document.getElementById('modalSaveBtn').textContent = '✓  Save Entry';
+  document.getElementById('modalErrorBox').classList.add('d-none');
+
+  // Clear all common fields
+  clearFields();
+
+  // Pre-fill doc ref if coming from card "Add Item"
+  if (prefillRef) {
+    if (docType === 'ir' && document.getElementById('f_inventory_receipt'))
+      document.getElementById('f_inventory_receipt').value = prefillRef;
+    if (docType === 'ii' && document.getElementById('f_inventory_issuance'))
+      document.getElementById('f_inventory_issuance').value = prefillRef;
+    if (docType === 'wo' && document.getElementById('f_work_order'))
+      document.getElementById('f_work_order').value = prefillRef;
+  }
+
+  document.getElementById('docModalOverlay').classList.add('show');
+  setTimeout(() => {
+    const firstInput = document.querySelector('#docRefFields input, #docRefFields select');
+    if (firstInput) firstInput.focus();
+  }, 150);
+}
+
+// ── Open edit modal ──────────────────────────────────────────
+function openEditModal(docType, pk) {
+  currentDocType = docType;
+  currentItemId  = pk;
+  const cfg = DOC_CONFIG[docType];
+
+  document.getElementById('modalHeader').className = 'doc-modal-header ' + cfg.headerCls;
+  document.getElementById('modalTitle').textContent   = 'Edit — ' + cfg.title;
+  document.getElementById('modalSubtitle').textContent = 'EDITING ITEM #' + pk;
+  document.getElementById('docRefSectionTitle').textContent = cfg.sectionTitle;
+  document.getElementById('docRefFields').innerHTML = cfg.fields;
+  document.getElementById('modalSaveBtn').innerHTML = '<i class="bi bi-check-lg me-1"></i> Update Entry';
+  document.getElementById('modalErrorBox').classList.add('d-none');
+  clearFields();
+
+  // Fetch existing item data
+  fetch(`/item/${pk}/get/`)
+    .then(r => r.json())
+    .then(d => {
+      setField('f_id_number', d.id_number);
+      setField('f_asset_tag', d.asset_tag);
+      setField('f_computer_tag', d.computer_tag);
+      setField('f_display_tag', d.display_tag);
+      setField('f_brand', d.brand);
+      setField('f_model', d.model);
+      setField('f_type', d.type);
+      setField('f_serial_number', d.serial_number);
+      setField('f_category', d.category);
+      setField('f_classification', d.classification);
+      setField('f_assigned_person', d.assigned_person);
+      setField('f_department', d.department);
+      setField('f_project_site', d.project_site);
+      setField('f_po', d.po);
+      setField('f_reference_number', d.reference_number);
+      setField('f_purchase_date', d.purchase_date);
+      setField('f_status', d.status);
+      setField('f_remarks', d.remarks);
+      // Doc-type specific
+      if (docType === 'ir') setField('f_inventory_receipt', d.inventory_receipt);
+      if (docType === 'ii') setField('f_inventory_issuance', d.inventory_issuance);
+      if (docType === 'wo') setField('f_work_order', d.work_order);
+    })
+    .catch(() => showToast('Could not load item data.', true));
+
+  document.getElementById('docModalOverlay').classList.add('show');
+}
+
+function setField(id, val) {
+  const el = document.getElementById(id);
+  if (el && val !== undefined && val !== null) el.value = val;
+}
+
+function clearFields() {
+  ['f_id_number','f_asset_tag','f_computer_tag','f_display_tag',
+   'f_brand','f_model','f_type','f_serial_number',
+   'f_assigned_person','f_department','f_project_site',
+   'f_po','f_reference_number','f_purchase_date','f_remarks'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const cat = document.getElementById('f_category');
+  if (cat) cat.value = '';
+  const cls = document.getElementById('f_classification');
+  if (cls) cls.value = '';
+  const sts = document.getElementById('f_status');
+  if (sts) sts.value = 'Active';
+}
+
+function closeModal() {
+  document.getElementById('docModalOverlay').classList.remove('show');
+}
+function closeModalOnOverlay(e) {
+  if (e.target === document.getElementById('docModalOverlay')) closeModal();
+}
+
+// ── Save ─────────────────────────────────────────────────────
+function saveDocItem() {
+  const btn = document.getElementById('modalSaveBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span> Saving…';
+
+  const formData = new FormData();
+  formData.append('csrfmiddlewaretoken', CSRF);
+  formData.append('doc_type', currentDocType);
+  if (currentItemId) formData.append('item_id', currentItemId);
+
+  const fields = [
+    'id_number','asset_tag','computer_tag','display_tag',
+    'brand','model','type','serial_number',
+    'category','classification',
+    'assigned_person','department','project_site',
+    'po','reference_number','purchase_date','status','remarks',
+    'inventory_receipt','inventory_issuance','work_order',
+  ];
+
+  // Map dynamic doc-ref fields
+  const irEl = document.getElementById('f_inventory_receipt');
+  const iiEl = document.getElementById('f_inventory_issuance');
+  const woEl = document.getElementById('f_work_order');
+  if (irEl) formData.append('inventory_receipt', irEl.value);
+  if (iiEl) formData.append('inventory_issuance', iiEl.value);
+  if (woEl) formData.append('work_order', woEl.value);
+
+  // Common fields
+  ['id_number','asset_tag','computer_tag','display_tag',
+   'brand','model','type','serial_number',
+   'category','classification',
+   'assigned_person','department','project_site',
+   'po','reference_number','purchase_date','status','remarks'].forEach(f => {
+    const el = document.getElementById('f_' + f);
+    if (el) formData.append(f, el.value);
+  });
+
+  fetch(SAVE_URL, { method: 'POST', body: formData })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save Entry';
+      if (data.success) {
+        closeModal();
+        showToast('✓ ' + (currentItemId ? 'Item updated!' : 'Entry saved! Ref: ' + data.doc_ref));
+        setTimeout(() => location.reload(), 900);
+      } else {
+        const errBox = document.getElementById('modalErrorBox');
+        const msgs = Object.values(data.errors || {}).flat();
+        errBox.innerHTML = '<strong>Please fix:</strong> ' + msgs.join(' · ');
+        errBox.classList.remove('d-none');
+      }
+    })
+    .catch(() => {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-check-lg me-1"></i> Save Entry';
+      showToast('Network error — please try again.', true);
+    });
+}
+
+// ── Toast ─────────────────────────────────────────────────────
+function showToast(msg, isError = false) {
+  const t = document.getElementById('docToast');
+  t.textContent = msg;
+  t.className = 'doc-toast' + (isError ? ' error' : '') + ' show';
+  setTimeout(() => t.classList.remove('show'), 3200);
+}
+
+// ── Keyboard close ────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') closeModal();
+});
+
+// ── Auto-open modal if tab was just clicked (and no data yet) ─
+// This opens the new modal automatically if the user clicks the tab while it's empty.
+{% if tab == 'receipt' and receipt_count == 0 and not search %}
+// uncomment below line to auto-open on empty tab:
+// window.addEventListener('load', () => openModal('ir'));
+{% endif %}
+</script>
+{% endblock %}

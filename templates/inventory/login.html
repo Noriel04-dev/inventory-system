@@ -1,0 +1,58 @@
+{% extends 'inventory/base.html' %}
+{% block title %}Login — Inventory System{% endblock %}
+{% block auth_content %}
+<div style="min-height:100vh;background:linear-gradient(135deg,#0f1d35 0%,#1a2b4a 50%,#0d3b8a 100%);display:flex;align-items:center;justify-content:center;">
+  <div style="width:100%;max-width:420px;padding:20px;">
+    <!-- Logo -->
+    <div class="text-center mb-4">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-3" style="width:70px;height:70px;background:rgba(37,99,235,0.2);border:2px solid rgba(37,99,235,0.4);">
+        <i class="bi bi-cpu-fill" style="font-size:2rem;color:#3b82f6;"></i>
+      </div>
+      <h3 class="text-white fw-bold mb-1">Inventory System</h3>
+      <p class="text-secondary" style="font-size:0.85rem;">Asset Management System</p>
+    </div>
+    <!-- Card -->
+    <div class="card border-0" style="border-radius:16px;box-shadow:0 20px 60px rgba(0,0,0,0.4);">
+      <div class="card-body p-4">
+        <h5 class="fw-bold mb-1" style="color:#1a2b4a;">Welcome back</h5>
+        <p class="text-muted small mb-4">Sign in to manage your inventory</p>
+        {% if messages %}
+          {% for msg in messages %}
+          <div class="alert alert-danger py-2 small">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+        <form method="post">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold small text-secondary">Username</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-person text-muted"></i></span>
+              <input type="text" name="username" class="form-control border-start-0 ps-0" placeholder="Enter your username" required autofocus>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="form-label fw-semibold small text-secondary">Password</label>
+            <div class="input-group">
+              <span class="input-group-text bg-light border-end-0"><i class="bi bi-lock text-muted"></i></span>
+              <input type="password" name="password" id="pwd" class="form-control border-start-0 ps-0" placeholder="Enter your password" required>
+              <button class="btn btn-light border" type="button" onclick="togglePwd()"><i class="bi bi-eye" id="eye-icon"></i></button>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 fw-semibold py-2" style="background:#2563eb;border-color:#2563eb;border-radius:10px;">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Sign In
+          </button>
+        </form>
+      </div>
+    </div>
+    <p class="text-center text-secondary small mt-3">© 2024 Inventory System</p>
+  </div>
+</div>
+<script>
+function togglePwd() {
+  const p = document.getElementById('pwd');
+  const i = document.getElementById('eye-icon');
+  if (p.type === 'password') { p.type = 'text'; i.className = 'bi bi-eye-slash'; }
+  else { p.type = 'password'; i.className = 'bi bi-eye'; }
+}
+</script>
+{% endblock %}

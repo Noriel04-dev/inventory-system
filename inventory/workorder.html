@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inventory System — Work Orders</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="main">
+<div class="content">
+
+<div class="section-grid">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Work Orders</div><div class="card-sub">All maintenance & installation requests</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" style="font-size:12px;">Export</button>
+          <button class="btn btn-primary" style="font-size:12px;" onclick="window.location.href='receiving.html'">+ New Work Order</button>
+        </div>
+      </div>
+      <div class="filter-tabs">
+        <div class="ftab active" onclick="filterFtab(this)">All Orders</div>
+        <div class="ftab" onclick="filterFtab(this)">Pending</div>
+        <div class="ftab" onclick="filterFtab(this)">In Progress</div>
+        <div class="ftab" onclick="filterFtab(this)">Completed</div>
+        <div class="ftab" onclick="filterFtab(this)">Cancelled</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>WO Number</th><th>Description</th><th>Department</th><th>Type</th><th>Priority</th><th>Technician</th><th>Target Date</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">WO-2026-0018</td>
+              <td><div class="item-name">Network cable installation</div><div class="item-sku">IT Department Floor 3</div></td>
+              <td class="text-muted">IT Dept</td>
+              <td><span class="badge badge-blue">Installation</span></td>
+              <td><span style="font-size:12px;color:var(--warning);font-weight:500;">⬆ Urgent</span></td>
+              <td class="text-muted">J. Santos</td>
+              <td class="text-muted">Mar 17</td>
+              <td><span class="badge badge-low">In Progress</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">WO-2026-0017</td>
+              <td><div class="item-name">Desktop PC repair — Finance</div><div class="item-sku">3 units motherboard replacement</div></td>
+              <td class="text-muted">Finance</td>
+              <td><span class="badge badge-gray">Repair</span></td>
+              <td><span style="font-size:12px;color:var(--gray-500);font-weight:500;">— Normal</span></td>
+              <td class="text-muted">R. Cruz</td>
+              <td class="text-muted">Mar 20</td>
+              <td><span class="badge badge-blue">Pending</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">WO-2026-0016</td>
+              <td><div class="item-name">CCTV Camera installation</div><div class="item-sku">Lobby & Server Room</div></td>
+              <td class="text-muted">Admin</td>
+              <td><span class="badge badge-blue">Installation</span></td>
+              <td><span style="font-size:12px;color:var(--danger);font-weight:500;">⬆⬆ Critical</span></td>
+              <td class="text-muted">A. Reyes</td>
+              <td class="text-muted">Mar 16</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">WO-2026-0015</td>
+              <td><div class="item-name">Projector setup — Conference Room</div><div class="item-sku">New projector + screen mount</div></td>
+              <td class="text-muted">Operations</td>
+              <td><span class="badge badge-gray">New Setup</span></td>
+              <td><span style="font-size:12px;color:var(--gray-500);font-weight:500;">— Normal</span></td>
+              <td class="text-muted">J. Santos</td>
+              <td class="text-muted">Mar 12</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">WO-2026-0014</td>
+              <td><div class="item-name">Firewall configuration</div><div class="item-sku">New Firewall device setup</div></td>
+              <td class="text-muted">IT Dept</td>
+              <td><span class="badge badge-blue">Installation</span></td>
+              <td><span style="font-size:12px;color:var(--danger);font-weight:500;">⬆⬆ Critical</span></td>
+              <td class="text-muted">R. Cruz</td>
+              <td class="text-muted">Mar 10</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-footer">
+        <span class="tbl-info">Showing 1–5 of 18 work orders</span>
+        <div class="pagination">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn active">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Summary</div></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--blue-50);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--blue-600);font-family:'DM Mono',monospace;">5</div>
+            <div style="font-size:11px;color:var(--blue-800);margin-top:2px;">Pending</div>
+          </div>
+          <div style="background:var(--warning-bg);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--warning);font-family:'DM Mono',monospace;">3</div>
+            <div style="font-size:11px;color:var(--warning);margin-top:2px;">In Progress</div>
+          </div>
+          <div style="background:var(--success-bg);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--success);font-family:'DM Mono',monospace;">10</div>
+            <div style="font-size:11px;color:var(--success);margin-top:2px;">Completed</div>
+          </div>
+          <div style="background:var(--gray-50);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--gray-600);font-family:'DM Mono',monospace;">18</div>
+            <div style="font-size:11px;color:var(--gray-500);margin-top:2px;">Total</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">By Type</div></div>
+      <div class="panel-body" style="padding:8px 16px;">
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--gray-50);"><span>Installation</span><span class="mono">8</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--gray-50);"><span>Repair / Maintenance</span><span class="mono">5</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;border-bottom:1px solid var(--gray-50);"><span>New Setup</span><span class="mono">3</span></div>
+        <div style="display:flex;justify-content:space-between;font-size:12.5px;padding:7px 0;"><span>Replacement</span><span class="mono">2</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script src="nav.js"></script>
+<script>
+injectNav('Work Orders','Maintenance & installation requests');
+function filterFtab(el){document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+</script>
+</body>
+</html>

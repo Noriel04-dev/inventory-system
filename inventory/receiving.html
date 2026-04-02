@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inventory System — Receiving Items</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.form-tabs{display:flex;gap:0;border-bottom:2px solid var(--gray-100);margin-bottom:0;}
+.ftab-main{padding:11px 20px;font-size:13px;font-weight:500;cursor:pointer;color:var(--gray-500);border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .15s,border-color .15s;}
+.ftab-main.active{color:var(--blue-600);border-bottom-color:var(--blue-600);}
+.ftab-main:hover:not(.active){color:var(--gray-800);}
+.form-panel{display:none;padding:24px;} .form-panel.active{display:block;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px;}
+.field-row-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px;}
+.field-full{margin-bottom:16px;}
+.form-section-title{font-size:11.5px;font-weight:600;color:var(--blue-800);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;padding-bottom:8px;border-bottom:1.5px solid var(--blue-50);}
+.items-table-wrap{border:1px solid var(--gray-100);border-radius:8px;overflow:hidden;margin-bottom:14px;}
+.items-table-wrap table{margin:0;}
+.add-row-btn{display:flex;align-items:center;gap:6px;padding:9px 14px;font-size:12.5px;font-weight:500;color:var(--blue-600);cursor:pointer;background:var(--blue-50);border:none;border-top:1px solid var(--gray-100);width:100%;font-family:'DM Sans',sans-serif;transition:background .12s;}
+.add-row-btn:hover{background:var(--blue-100);}
+.form-actions{display:flex;gap:10px;justify-content:flex-end;padding-top:16px;border-top:1px solid var(--gray-100);margin-top:4px;}
+.form-input-sm{width:100%;height:32px;border:1px solid var(--gray-200);border-radius:5px;padding:0 8px;font-size:12.5px;font-family:'DM Sans',sans-serif;color:var(--gray-900);outline:none;background:white;}
+.form-input-sm:focus{border-color:var(--blue-400);}
+.doc-header{background:var(--blue-900);color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;}
+.doc-title{font-size:15px;font-weight:600;}
+.doc-meta{font-size:11.5px;color:var(--blue-200);margin-top:2px;}
+.doc-num{font-family:'DM Mono',monospace;font-size:14px;color:var(--blue-100);}
+.sig-box{border:1px solid var(--gray-200);border-radius:7px;padding:14px;background:var(--gray-50);}
+.sig-label{font-size:11px;color:var(--gray-400);margin-bottom:6px;}
+.sig-line{height:36px;border-bottom:1px dashed var(--gray-200);}
+.sig-name{font-size:11px;color:var(--gray-400);margin-top:5px;text-align:center;}
+.recent-list{margin-top:16px;}
+.recent-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--gray-50);}
+.recent-item:last-child{border-bottom:none;}
+.ri-num{font-size:12px;font-family:'DM Mono',monospace;color:var(--blue-600);font-weight:500;min-width:90px;}
+.ri-desc{flex:1;font-size:12.5px;color:var(--gray-700,var(--gray-800));}
+.ri-date{font-size:11px;color:var(--gray-400);}
+</style>
+</head>
+<body>
+<div class="main">
+<div class="content">
+
+<div class="section-grid">
+  <div>
+    <div class="card">
+      <div class="doc-header">
+        <div>
+          <div class="doc-title">Receiving Items</div>
+          <div class="doc-meta">Inventory receipt, work orders & issuance</div>
+        </div>
+        <div class="doc-num">#RCV-2026-0041</div>
+      </div>
+
+      <div class="form-tabs" id="formTabs">
+        <div class="ftab-main active" onclick="showForm('receipt',this)">📋 Inventory Receipt</div>
+        <div class="ftab-main" onclick="showForm('workorder',this)">🔧 Work Order</div>
+        <div class="ftab-main" onclick="showForm('issuance',this)">📤 Issuance Form</div>
+      </div>
+
+      <!-- RECEIPT FORM -->
+      <div class="form-panel active" id="receiptPanel">
+        <div class="form-section-title">Receipt Information</div>
+        <div class="field-row">
+          <div><label class="form-label">Receipt No.</label><input class="form-input" value="RCV-2026-0041" readonly style="background:var(--gray-50);font-family:'DM Mono',monospace;font-size:13px;"></div>
+          <div><label class="form-label">Date Received</label><input type="date" class="form-input" value="2026-03-15"></div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Supplier / Source</label>
+            <select class="form-input form-select"><option>-- Select Supplier --</option><option>TechCorp Philippines</option><option>Office Depot PH</option><option>Starlink Reseller</option></select>
+          </div>
+          <div><label class="form-label">Purchase Order Ref</label><input class="form-input" placeholder="PO-XXXX"></div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Received By</label><input class="form-input" value="Alex Johnson"></div>
+          <div><label class="form-label">Delivery Ref / DR No.</label><input class="form-input" placeholder="DR-XXXX"></div>
+        </div>
+
+        <div class="form-section-title" style="margin-top:8px;">Items Received</div>
+        <div class="items-table-wrap">
+          <table>
+            <thead><tr><th>Item / Description</th><th>Category</th><th>Qty</th><th>Unit</th><th>Unit Cost</th><th>Total</th><th></th></tr></thead>
+            <tbody id="receiptRows">
+              <tr>
+                <td><input class="form-input-sm" placeholder="Item name"></td>
+                <td><select class="form-input-sm"><option>Electronics</option><option>Furniture</option><option>Network</option><option>Stationery</option><option>Storage</option></select></td>
+                <td><input class="form-input-sm" type="number" value="1" style="width:60px;"></td>
+                <td><select class="form-input-sm" style="width:70px;"><option>pcs</option><option>box</option><option>set</option><option>roll</option></select></td>
+                <td><input class="form-input-sm" type="number" placeholder="0.00" style="width:90px;"></td>
+                <td><input class="form-input-sm" placeholder="0.00" readonly style="background:var(--gray-50);width:90px;"></td>
+                <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn" onclick="addReceiptRow()">+ Add Item</button>
+        </div>
+
+        <div class="field-row">
+          <div><label class="form-label">Remarks / Notes</label><textarea class="form-input" style="height:64px;padding-top:8px;" placeholder="Additional notes..."></textarea></div>
+          <div>
+            <div style="background:var(--gray-50);border:1px solid var(--gray-100);border-radius:8px;padding:14px;">
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span class="text-muted">Subtotal</span><span class="mono">₱0.00</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px;"><span class="text-muted">VAT (12%)</span><span class="mono">₱0.00</span></div>
+              <div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;border-top:1px solid var(--gray-200);padding-top:8px;margin-top:2px;"><span>Total</span><span class="mono">₱0.00</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:4px;">
+          <div class="sig-box"><div class="sig-label">Received by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+          <div class="sig-box"><div class="sig-label">Inspected by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+          <div class="sig-box"><div class="sig-label">Approved by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary">Save Draft</button>
+          <button class="btn btn-primary">Submit Receipt</button>
+        </div>
+      </div>
+
+      <!-- WORK ORDER FORM -->
+      <div class="form-panel" id="workorderPanel">
+        <div class="form-section-title">Work Order Details</div>
+        <div class="field-row">
+          <div><label class="form-label">Work Order No.</label><input class="form-input" value="WO-2026-0018" readonly style="background:var(--gray-50);font-family:'DM Mono',monospace;font-size:13px;"></div>
+          <div><label class="form-label">Date</label><input type="date" class="form-input" value="2026-03-15"></div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Requested By</label><input class="form-input" placeholder="Name of requester"></div>
+          <div><label class="form-label">Department</label>
+            <select class="form-input form-select"><option>-- Select Department --</option><option>IT Department</option><option>Operations</option><option>Admin</option><option>Finance</option></select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Type of Work</label>
+            <select class="form-input form-select"><option>-- Select Type --</option><option>Installation</option><option>Repair / Maintenance</option><option>Replacement</option><option>New Setup</option></select>
+          </div>
+          <div><label class="form-label">Priority</label>
+            <select class="form-input form-select"><option>Normal</option><option>Urgent</option><option>Critical</option></select>
+          </div>
+        </div>
+        <div class="field-full"><label class="form-label">Work Description</label><textarea class="form-input" style="height:80px;padding-top:8px;" placeholder="Describe the work to be done..."></textarea></div>
+        <div class="field-row">
+          <div><label class="form-label">Assigned Technician</label><input class="form-input" placeholder="Technician name"></div>
+          <div><label class="form-label">Target Completion</label><input type="date" class="form-input"></div>
+        </div>
+
+        <div class="form-section-title" style="margin-top:4px;">Materials Required</div>
+        <div class="items-table-wrap">
+          <table>
+            <thead><tr><th>Item / Part</th><th>Qty Needed</th><th>Unit</th><th>From Stock</th><th>Remarks</th></tr></thead>
+            <tbody>
+              <tr>
+                <td><input class="form-input-sm" placeholder="Part/material"></td>
+                <td><input class="form-input-sm" type="number" value="1" style="width:70px;"></td>
+                <td><select class="form-input-sm" style="width:70px;"><option>pcs</option><option>box</option><option>set</option></select></td>
+                <td><select class="form-input-sm"><option>Yes</option><option>No (Purchase)</option></select></td>
+                <td><input class="form-input-sm" placeholder="Notes"></td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn">+ Add Material</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px;">
+          <div class="sig-box"><div class="sig-label">Requested by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+          <div class="sig-box"><div class="sig-label">Approved by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary">Save Draft</button>
+          <button class="btn btn-primary">Submit Work Order</button>
+        </div>
+      </div>
+
+      <!-- ISSUANCE FORM -->
+      <div class="form-panel" id="issuancePanel">
+        <div class="form-section-title">Issuance Information</div>
+        <div class="field-row">
+          <div><label class="form-label">Issuance No.</label><input class="form-input" value="ISS-2026-0033" readonly style="background:var(--gray-50);font-family:'DM Mono',monospace;font-size:13px;"></div>
+          <div><label class="form-label">Date Issued</label><input type="date" class="form-input" value="2026-03-15"></div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Issued To (Name)</label><input class="form-input" placeholder="Recipient full name"></div>
+          <div><label class="form-label">Department / Office</label><input class="form-input" placeholder="Department name"></div>
+        </div>
+        <div class="field-row">
+          <div><label class="form-label">Purpose / Reason</label><input class="form-input" placeholder="e.g. Office use, Project XYZ"></div>
+          <div><label class="form-label">Work Order Ref (if any)</label><input class="form-input" placeholder="WO-XXXX"></div>
+        </div>
+
+        <div class="form-section-title" style="margin-top:4px;">Items to be Issued</div>
+        <div class="items-table-wrap">
+          <table>
+            <thead><tr><th>Item</th><th>SKU</th><th>Qty Available</th><th>Qty to Issue</th><th>Unit</th><th></th></tr></thead>
+            <tbody>
+              <tr>
+                <td><input class="form-input-sm" placeholder="Item name"></td>
+                <td><input class="form-input-sm" style="font-family:'DM Mono',monospace;" placeholder="SKU-XXXXX"></td>
+                <td><input class="form-input-sm" placeholder="0" readonly style="background:var(--gray-50);width:80px;"></td>
+                <td><input class="form-input-sm" type="number" value="1" style="width:70px;"></td>
+                <td><select class="form-input-sm" style="width:70px;"><option>pcs</option><option>box</option><option>set</option></select></td>
+                <td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">×</button></td>
+              </tr>
+            </tbody>
+          </table>
+          <button class="add-row-btn">+ Add Item</button>
+        </div>
+
+        <div class="field-full"><label class="form-label">Remarks</label><textarea class="form-input" style="height:60px;padding-top:8px;" placeholder="Additional notes..."></textarea></div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:8px;">
+          <div class="sig-box"><div class="sig-label">Issued by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+          <div class="sig-box"><div class="sig-label">Received by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+          <div class="sig-box"><div class="sig-label">Approved by</div><div class="sig-line"></div><div class="sig-name">Signature over Printed Name</div></div>
+        </div>
+
+        <div class="form-actions">
+          <button class="btn btn-secondary">Save Draft</button>
+          <button class="btn btn-primary">Submit Issuance</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Recent Documents</div></div>
+      <div class="panel-body" style="padding:8px 14px;">
+        <div class="recent-item"><div class="ri-num">RCV-2026-0040</div><div class="ri-desc">Laptop Pro 15 × 10</div><div class="ri-date">Mar 14</div></div>
+        <div class="recent-item"><div class="ri-num">WO-2026-0017</div><div class="ri-desc">Network cable installation</div><div class="ri-date">Mar 13</div></div>
+        <div class="recent-item"><div class="ri-num">ISS-2026-0032</div><div class="ri-desc">Wireless Mouse × 5</div><div class="ri-date">Mar 13</div></div>
+        <div class="recent-item"><div class="ri-num">RCV-2026-0039</div><div class="ri-desc">Ergonomic Chair × 6</div><div class="ri-date">Mar 10</div></div>
+        <div class="recent-item"><div class="ri-num">ISS-2026-0031</div><div class="ri-desc">Storage Box × 12</div><div class="ri-date">Mar 11</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Form Guide</div></div>
+      <div class="panel-body">
+        <div style="font-size:12px;color:var(--gray-600);line-height:1.7;">
+          <p style="margin-bottom:8px;"><strong>Inventory Receipt</strong> — Fill when items arrive from a supplier or transfer. Attach delivery receipt.</p>
+          <p style="margin-bottom:8px;"><strong>Work Order</strong> — For installation, repair, or maintenance requests. Requires department head approval.</p>
+          <p><strong>Issuance Form</strong> — When releasing items from stock. Must have a valid purpose and recipient.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script src="nav.js"></script>
+<script>
+injectNav('Receiving Items','Inventory Receipt · Work Order · Issuance');
+function showForm(name, el){
+  document.querySelectorAll('.ftab-main').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.form-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(name+'Panel').classList.add('active');
+}
+function addReceiptRow(){
+  const tbody=document.getElementById('receiptRows');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`<td><input class="form-input-sm" placeholder="Item name"></td><td><select class="form-input-sm"><option>Electronics</option><option>Furniture</option><option>Network</option><option>Stationery</option><option>Storage</option></select></td><td><input class="form-input-sm" type="number" value="1" style="width:60px;"></td><td><select class="form-input-sm" style="width:70px;"><option>pcs</option><option>box</option><option>set</option><option>roll</option></select></td><td><input class="form-input-sm" type="number" placeholder="0.00" style="width:90px;"></td><td><input class="form-input-sm" placeholder="0.00" readonly style="background:var(--gray-50);width:90px;"></td><td><button onclick="this.closest('tr').remove()" style="background:none;border:none;color:var(--danger);cursor:pointer;font-size:16px;">×</button></td>`;
+  tbody.appendChild(tr);
+}
+</script>
+</body>
+</html>

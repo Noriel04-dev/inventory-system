@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inventory System — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --blue-50:#E6F1FB;--blue-100:#B5D4F4;--blue-200:#85B7EB;--blue-400:#378ADD;
+  --blue-600:#185FA5;--blue-800:#0C447C;--blue-900:#042C53;
+  --gray-50:#F4F5F7;--gray-100:#E8EAED;--gray-200:#CDD0D5;--gray-400:#8C919A;
+  --gray-600:#5A5F6A;--gray-800:#2E3340;--gray-900:#1A1D24;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--blue-900);min-height:100vh;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;}
+.bg-pattern{position:absolute;inset:0;background-image:radial-gradient(circle at 20% 50%, rgba(55,138,221,0.15) 0%, transparent 50%),radial-gradient(circle at 80% 20%, rgba(24,95,165,0.2) 0%, transparent 40%);pointer-events:none;}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.card{background:white;border-radius:16px;padding:40px;width:420px;position:relative;z-index:1;box-shadow:0 24px 60px rgba(4,44,83,0.4);}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:32px;}
+.logo-icon{width:44px;height:44px;background:var(--blue-600);border-radius:10px;display:flex;align-items:center;justify-content:center;}
+.logo-icon svg{width:24px;height:24px;fill:white;}
+.logo-text h1{font-size:17px;font-weight:600;color:var(--gray-900);}
+.logo-text p{font-size:12px;color:var(--gray-400);margin-top:1px;}
+.tabs{display:flex;background:var(--gray-50);border-radius:10px;padding:4px;margin-bottom:28px;}
+.tab{flex:1;text-align:center;padding:9px;border-radius:7px;font-size:13.5px;font-weight:500;cursor:pointer;color:var(--gray-400);transition:all 0.2s;}
+.tab.active{background:white;color:var(--blue-600);box-shadow:0 1px 4px rgba(0,0,0,0.1);}
+.form-group{margin-bottom:18px;}
+label{display:block;font-size:12.5px;font-weight:500;color:var(--gray-600);margin-bottom:6px;}
+input{width:100%;height:42px;border:1.5px solid var(--gray-200);border-radius:8px;padding:0 14px;font-size:14px;font-family:'DM Sans',sans-serif;color:var(--gray-900);outline:none;transition:border-color 0.15s;}
+input:focus{border-color:var(--blue-400);}
+input::placeholder{color:var(--gray-400);}
+.btn-submit{width:100%;height:44px;background:var(--blue-600);color:white;border:none;border-radius:8px;font-size:14px;font-weight:600;font-family:'DM Sans',sans-serif;cursor:pointer;margin-top:4px;transition:background 0.15s;}
+.btn-submit:hover{background:var(--blue-800);}
+.divider{text-align:center;font-size:12px;color:var(--gray-400);margin:18px 0;position:relative;}
+.divider::before,.divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--gray-100);}
+.divider::before{left:0;}.divider::after{right:0;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.signup-panel{display:none;}
+.signup-panel.active,.signin-panel.active{display:block;}
+</style>
+</head>
+<body>
+<div class="bg-pattern"></div>
+<div class="bg-grid"></div>
+<div class="card">
+  <div class="logo">
+    <div class="logo-icon">
+      <svg viewBox="0 0 24 24"><path d="M21 7L12 2L3 7V17L12 22L21 17V7ZM12 4.23L19 8.15V15.85L12 19.77L5 15.85V8.15L12 4.23Z"/></svg>
+    </div>
+    <div class="logo-text">
+      <h1>Inventory System</h1>
+      <p>Warehouse Management Platform</p>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="switchTab('signin')">Sign In</div>
+    <div class="tab" onclick="switchTab('signup')">Sign Up</div>
+  </div>
+
+  <!-- SIGN IN -->
+  <div class="signin-panel active" id="signinPanel">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" placeholder="Enter your username">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" placeholder="Enter your password">
+    </div>
+    <button class="btn-submit" onclick="window.location.href='dashboard.html'">Sign In</button>
+  </div>
+
+  <!-- SIGN UP -->
+  <div class="signup-panel" id="signupPanel">
+    <div class="form-row">
+      <div class="form-group"><label>First Name</label><input type="text" placeholder="First name"></div>
+      <div class="form-group"><label>Last Name</label><input type="text" placeholder="Last name"></div>
+    </div>
+    <div class="form-group"><label>Email Address</label><input type="email" placeholder="your@email.com"></div>
+    <div class="form-group"><label>Username</label><input type="text" placeholder="Choose a username"></div>
+    <div class="form-group"><label>Password</label><input type="password" placeholder="Create a password"></div>
+    <button class="btn-submit" onclick="window.location.href='dashboard.html'">Create Account</button>
+  </div>
+</div>
+<script>
+function switchTab(t){
+  document.querySelectorAll('.tab').forEach((el,i)=>el.classList.toggle('active',i===(t==='signin'?0:1)));
+  document.getElementById('signinPanel').classList.toggle('active',t==='signin');
+  document.getElementById('signupPanel').classList.toggle('active',t==='signup');
+}
+</script>
+</body>
+</html>

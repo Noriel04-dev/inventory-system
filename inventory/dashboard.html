@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inventory System — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+.chart-card{background:white;border:1px solid var(--gray-100);border-radius:10px;padding:18px;}
+.chart-title{font-size:13.5px;font-weight:600;color:var(--gray-900);margin-bottom:4px;}
+.chart-sub{font-size:11.5px;color:var(--gray-400);margin-bottom:16px;}
+.charts-grid{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px;}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.alert-row{display:flex;align-items:flex-start;gap:9px;padding:9px 0;border-bottom:1px solid var(--gray-50);}
+.alert-row:last-child{border-bottom:none;padding-bottom:0;}
+.adot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.adot.warn{background:var(--warning);} .adot.danger{background:var(--danger);} .adot.info{background:var(--blue-400);}
+.atitle{font-size:12.5px;font-weight:500;color:var(--gray-800);}
+.adesc{font-size:11px;color:var(--gray-400);margin-top:1px;}
+.quick-link{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--gray-100);border-radius:8px;cursor:pointer;text-decoration:none;transition:border-color .15s,background .15s;margin-bottom:8px;}
+.quick-link:hover{background:var(--blue-50);border-color:var(--blue-100);}
+.ql-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.ql-icon svg{width:16px;height:16px;}
+.ql-icon.blue{background:var(--blue-50);} .ql-icon.blue svg{fill:var(--blue-600);}
+.ql-icon.green{background:var(--success-bg);} .ql-icon.green svg{fill:var(--success);}
+.ql-icon.amber{background:var(--warning-bg);} .ql-icon.amber svg{fill:var(--warning);}
+.ql-label{font-size:12.5px;font-weight:500;color:var(--gray-800);}
+.ql-sub{font-size:11px;color:var(--gray-400);}
+</style>
+</head>
+<body>
+<div class="main">
+<div class="content">
+
+<!-- STATS -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <div class="stat-ico blue"><svg viewBox="0 0 24 24"><path d="M21 7L12 2L3 7V17L12 22L21 17V7ZM12 4.23L19 8.15V15.85L12 19.77L5 15.85V8.15L12 4.23Z"/></svg></div>
+    <div><div class="stat-lbl">Total Products</div><div class="stat-val">248</div><div class="stat-chg up">↑ 12 this month</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-ico green"><svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12L3.41 13.41L9 19L21 7L19.59 5.59L9 16.17Z"/></svg></div>
+    <div><div class="stat-lbl">In Stock Items</div><div class="stat-val">186</div><div class="stat-chg up">75% of catalog</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-ico amber"><svg viewBox="0 0 24 24"><path d="M1 21H23L12 2L1 21ZM13 18H11V16H13V18ZM13 14H11V10H13V14Z"/></svg></div>
+    <div><div class="stat-lbl">Low Stock Alerts</div><div class="stat-val">34</div><div class="stat-chg dn">↑ 8 from last week</div></div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-ico gray"><svg viewBox="0 0 24 24"><path d="M11.8 10.9C9.53 10.31 8.8 9.7 8.8 8.75C8.8 7.66 9.81 6.9 11.5 6.9C13.28 6.9 13.94 7.75 14 9H16.21C16.14 7.28 15.09 5.7 13 5.19V3H10V5.16C8.06 5.58 6.5 6.84 6.5 8.77C6.5 11.08 8.41 12.23 11.2 12.9C13.7 13.5 14.2 14.38 14.2 15.31C14.2 16 13.71 17.1 11.5 17.1C9.44 17.1 8.63 16.18 8.5 15H6.32C6.44 17.19 8.08 18.42 10 18.83V21H13V18.85C14.95 18.48 16.5 17.35 16.5 15.3C16.5 12.46 14.07 11.49 11.8 10.9Z"/></svg></div>
+    <div><div class="stat-lbl">Inventory Value</div><div class="stat-val">$84.2k</div><div class="stat-chg up">↑ $3.1k this month</div></div>
+  </div>
+</div>
+
+<!-- CHARTS ROW 1 -->
+<div class="charts-grid section-gap">
+  <div class="chart-card">
+    <div class="chart-title">Monthly Stock Movement</div>
+    <div class="chart-sub">Items received vs. issued over 6 months</div>
+    <canvas id="lineChart" height="120"></canvas>
+  </div>
+  <div class="chart-card">
+    <div class="chart-title">Stock Status</div>
+    <div class="chart-sub">Current inventory health</div>
+    <canvas id="doughnutChart" height="120"></canvas>
+  </div>
+</div>
+
+<!-- CHARTS ROW 2 + PANELS -->
+<div class="section-grid">
+  <div>
+    <div class="charts-row section-gap">
+      <div class="chart-card">
+        <div class="chart-title">Top Categories by Value</div>
+        <div class="chart-sub">Inventory value distribution</div>
+        <canvas id="barChart" height="130"></canvas>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Weekly Activity</div>
+        <div class="chart-sub">Receipts & issuances this week</div>
+        <canvas id="barChart2" height="130"></canvas>
+      </div>
+    </div>
+
+    <!-- RECENT ACTIVITY TABLE -->
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Recent Transactions</div><div class="card-sub">Last 10 inventory movements</div></div>
+        <a href="receiving.html" class="btn btn-secondary" style="font-size:12px;">View All</a>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>Date</th><th>User</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><div class="item-cell"><div class="item-thumb">💻</div><div><div class="item-name">Laptop Pro 15</div><div class="item-sku">SKU-00142</div></div></div></td><td><span class="badge badge-blue">Receipt</span></td><td class="mono">+10</td><td class="text-muted">Mar 14, 2026</td><td>AJ</td><td><span class="badge badge-in">Completed</span></td></tr>
+            <tr><td><div class="item-cell"><div class="item-thumb">🖱️</div><div><div class="item-name">Wireless Mouse</div><div class="item-sku">SKU-00088</div></div></div></td><td><span class="badge badge-gray">Issuance</span></td><td class="mono" style="color:var(--danger)">-5</td><td class="text-muted">Mar 13, 2026</td><td>MR</td><td><span class="badge badge-in">Completed</span></td></tr>
+            <tr><td><div class="item-cell"><div class="item-thumb">⌨️</div><div><div class="item-name">Mech. Keyboard</div><div class="item-sku">SKU-00074</div></div></div></td><td><span class="badge badge-blue">Receipt</span></td><td class="mono">+20</td><td class="text-muted">Mar 12, 2026</td><td>AJ</td><td><span class="badge badge-in">Completed</span></td></tr>
+            <tr><td><div class="item-cell"><div class="item-thumb">📦</div><div><div class="item-name">Storage Box Set</div><div class="item-sku">SKU-00115</div></div></div></td><td><span class="badge badge-gray">Issuance</span></td><td class="mono" style="color:var(--danger)">-12</td><td class="text-muted">Mar 11, 2026</td><td>LC</td><td><span class="badge badge-low">Pending</span></td></tr>
+            <tr><td><div class="item-cell"><div class="item-thumb">🪑</div><div><div class="item-name">Ergonomic Chair</div><div class="item-sku">SKU-00231</div></div></div></td><td><span class="badge badge-blue">Receipt</span></td><td class="mono">+6</td><td class="text-muted">Mar 10, 2026</td><td>AJ</td><td><span class="badge badge-in">Completed</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT SIDE -->
+  <div>
+    <!-- Alerts -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">⚠ Stock Alerts</div></div>
+      <div class="panel-body" style="padding:8px 14px;">
+        <div class="alert-row"><div class="adot danger"></div><div><div class="atitle">Storage Box Set</div><div class="adesc">Out of stock — reorder needed</div></div></div>
+        <div class="alert-row"><div class="adot warn"></div><div><div class="atitle">Wireless Mouse</div><div class="adesc">18 units — below threshold</div></div></div>
+        <div class="alert-row"><div class="adot warn"></div><div><div class="atitle">Mechanical Keyboard</div><div class="adesc">12 units — critically low</div></div></div>
+        <div class="alert-row"><div class="adot info"></div><div><div class="atitle">PO #1042 Arriving</div><div class="adesc">Expected Mar 17 — 5 items</div></div></div>
+        <div class="alert-row"><div class="adot warn"></div><div><div class="atitle">RJ45 Cable Reel</div><div class="adesc">8 units — below threshold</div></div></div>
+      </div>
+    </div>
+    <!-- Quick Links -->
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Quick Actions</div></div>
+      <div class="panel-body">
+        <a href="receiving.html" class="quick-link">
+          <div class="ql-icon blue"><svg viewBox="0 0 24 24"><path d="M20 6H4L2 2H22L20 6ZM4 8L6 22H18L20 8H4Z"/></svg></div>
+          <div><div class="ql-label">New Receipt</div><div class="ql-sub">Record incoming items</div></div>
+        </a>
+        <a href="workorder.html" class="quick-link">
+          <div class="ql-icon green"><svg viewBox="0 0 24 24"><path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3Z"/></svg></div>
+          <div><div class="ql-label">New Work Order</div><div class="ql-sub">Create work request</div></div>
+        </a>
+        <a href="issuance.html" class="quick-link">
+          <div class="ql-icon amber"><svg viewBox="0 0 24 24"><path d="M14 2H6C4.9 2 4 2.9 4 4V20C4 21.1 4.9 22 6 22H18C19.1 22 20 21.1 20 20V8L14 2Z"/></svg></div>
+          <div><div class="ql-label">Issue Items</div><div class="ql-sub">Fill issuance form</div></div>
+        </a>
+        <a href="inventory.html" class="quick-link">
+          <div class="ql-icon blue"><svg viewBox="0 0 24 24"><path d="M21 7L12 2L3 7V17L12 22L21 17V7ZM12 4.23L19 8.15V15.85L12 19.77L5 15.85V8.15L12 4.23Z"/></svg></div>
+          <div><div class="ql-label">Browse Inventory</div><div class="ql-sub">View all categories</div></div>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- end content -->
+</div><!-- end main -->
+
+<script src="nav.js"></script>
+<script>
+injectNav('Dashboard','Inventory Management System');
+
+// Line Chart
+new Chart(document.getElementById('lineChart'),{
+  type:'line',
+  data:{
+    labels:['Oct','Nov','Dec','Jan','Feb','Mar'],
+    datasets:[
+      {label:'Received',data:[42,58,35,67,48,72],borderColor:'#378ADD',backgroundColor:'rgba(55,138,221,0.08)',tension:0.4,pointRadius:4,pointBackgroundColor:'#378ADD'},
+      {label:'Issued',data:[30,44,28,51,40,55],borderColor:'#888780',backgroundColor:'rgba(136,135,128,0.06)',tension:0.4,pointRadius:4,pointBackgroundColor:'#888780'}
+    ]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:12,padding:16}}},scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:11}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{family:'DM Sans',size:11}}}}}
+});
+
+// Doughnut
+new Chart(document.getElementById('doughnutChart'),{
+  type:'doughnut',
+  data:{
+    labels:['In Stock','Low Stock','Out of Stock'],
+    datasets:[{data:[75,14,11],backgroundColor:['#639922','#EF9F27','#E24B4A'],borderWidth:0}]
+  },
+  options:{responsive:true,cutout:'70%',plugins:{legend:{position:'bottom',labels:{font:{family:'DM Sans',size:11},boxWidth:10,padding:14}}}}
+});
+
+// Bar Chart
+new Chart(document.getElementById('barChart'),{
+  type:'bar',
+  data:{
+    labels:['Electronics','Furniture','Stationery','Storage','Lighting','Network'],
+    datasets:[{label:'Value ($k)',data:[38,22,8,6,4,6],backgroundColor:'#378ADD',borderRadius:4}]
+  },
+  options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{family:'DM Sans',size:10}}}}}
+});
+
+// Weekly Bar
+new Chart(document.getElementById('barChart2'),{
+  type:'bar',
+  data:{
+    labels:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets:[
+      {label:'Receipts',data:[8,12,5,14,9,3,1],backgroundColor:'#378ADD',borderRadius:3},
+      {label:'Issuances',data:[5,9,7,11,6,2,0],backgroundColor:'#CDD0D5',borderRadius:3}
+    ]
+  },
+  options:{responsive:true,plugins:{legend:{labels:{font:{family:'DM Sans',size:11},boxWidth:10,padding:12}}},scales:{x:{grid:{display:false},ticks:{font:{family:'DM Sans',size:10}}},y:{grid:{color:'rgba(0,0,0,0.05)'},ticks:{font:{family:'DM Sans',size:10}}}}}
+});
+</script>
+</body>
+</html>

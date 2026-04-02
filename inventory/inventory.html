@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inventory System — Inventory</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.inv-layout{display:grid;grid-template-columns:220px 1fr;gap:18px;align-items:start;}
+.cat-sidebar{background:white;border:1px solid var(--gray-100);border-radius:10px;overflow:hidden;position:sticky;top:78px;}
+.cat-header{padding:13px 14px;border-bottom:1px solid var(--gray-100);background:var(--blue-900);}
+.cat-header-title{font-size:12.5px;font-weight:600;color:white;}
+.cat-nav{padding:8px;}
+.cat-group{margin-bottom:4px;}
+.cat-group-title{font-size:10px;font-weight:600;color:var(--gray-400);letter-spacing:.07em;text-transform:uppercase;padding:6px 8px 4px;}
+.cat-item{display:flex;align-items:center;gap:7px;padding:7px 8px;border-radius:7px;cursor:pointer;font-size:12.5px;color:var(--gray-700,var(--gray-800));transition:background .12s;user-select:none;}
+.cat-item:hover{background:var(--blue-50);}
+.cat-item.active{background:var(--blue-50);color:var(--blue-600);font-weight:500;}
+.cat-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.cat-count{margin-left:auto;font-size:10.5px;font-family:'DM Mono',monospace;color:var(--gray-400);}
+.sub-items{padding-left:22px;}
+.sub-item{display:flex;align-items:center;gap:6px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:12px;color:var(--gray-600);transition:background .12s;}
+.sub-item:hover{background:var(--blue-50);color:var(--blue-600);}
+.sub-item.active{background:var(--blue-50);color:var(--blue-600);font-weight:500;}
+.inv-main{}
+.breadcrumb{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--gray-400);margin-bottom:14px;}
+.breadcrumb span{color:var(--blue-600);font-weight:500;}
+.breadcrumb-sep{color:var(--gray-300);}
+.grid-view{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;}
+.prod-card{background:white;border:1px solid var(--gray-100);border-radius:9px;padding:14px;cursor:pointer;transition:border-color .15s,box-shadow .15s;}
+.prod-card:hover{border-color:var(--blue-200);box-shadow:0 2px 10px rgba(55,138,221,0.1);}
+.prod-card-thumb{width:100%;height:80px;background:var(--blue-50);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:32px;margin-bottom:10px;}
+.prod-card-name{font-size:13px;font-weight:500;color:var(--gray-900);margin-bottom:3px;}
+.prod-card-sku{font-size:11px;color:var(--gray-400);font-family:'DM Mono',monospace;margin-bottom:8px;}
+.prod-card-footer{display:flex;align-items:center;justify-content:space-between;}
+.prod-card-stock{font-size:12px;font-family:'DM Mono',monospace;font-weight:500;}
+.view-toggle{display:flex;gap:3px;}
+.view-btn{width:30px;height:30px;display:flex;align-items:center;justify-content:center;border-radius:6px;border:1px solid var(--gray-200);background:white;cursor:pointer;color:var(--gray-500);transition:all .12s;}
+.view-btn.active{background:var(--blue-600);color:white;border-color:var(--blue-600);}
+.view-btn svg{width:14px;height:14px;}
+</style>
+</head>
+<body>
+<div class="main">
+<div class="content">
+
+<div class="inv-layout">
+  <!-- CATEGORY SIDEBAR -->
+  <div class="cat-sidebar">
+    <div class="cat-header"><div class="cat-header-title">Categories</div></div>
+    <div class="cat-nav">
+
+      <div class="cat-group">
+        <div class="cat-group-title">Computer Equipment</div>
+        <div class="cat-item active" onclick="selectCat(this,'Desktop')"><div class="cat-dot" style="background:#378ADD;"></div>Desktop<span class="cat-count">87</span></div>
+        <div class="sub-items" id="desktopSubs">
+          <div class="sub-item active">Keyboard</div>
+          <div class="sub-item">RAM</div>
+          <div class="sub-item">SSD/HDD</div>
+          <div class="sub-item">LCD/Display</div>
+          <div class="sub-item">Mousepad</div>
+          <div class="sub-item">Charger</div>
+          <div class="sub-item">CPU Casing</div>
+          <div class="sub-item">Mother Board</div>
+          <div class="sub-item">Power Cord</div>
+          <div class="sub-item">Sata Cable</div>
+          <div class="sub-item">Monitor Display</div>
+          <div class="sub-item">HDMI/VGA</div>
+          <div class="sub-item">GPU</div>
+          <div class="sub-item">Mouse</div>
+          <div class="sub-item">Power Supply</div>
+        </div>
+        <div class="cat-item" onclick="selectCat(this,'Laptop')"><div class="cat-dot" style="background:#1D9E75;"></div>Laptop<span class="cat-count">43</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Printer')"><div class="cat-dot" style="background:#EF9F27;"></div>Printer<span class="cat-count">18</span></div>
+      </div>
+
+      <div class="cat-group">
+        <div class="cat-group-title">Infrastructure</div>
+        <div class="cat-item" onclick="selectCat(this,'Electrical')"><div class="cat-dot" style="background:#D4537E;"></div>Electrical<span class="cat-count">24</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Display')"><div class="cat-dot" style="background:#7F77DD;"></div>Display<span class="cat-count">12</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Telephony')"><div class="cat-dot" style="background:#5A5F6A;"></div>Telephony<span class="cat-count">9</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Network')"><div class="cat-dot" style="background:#185FA5;"></div>Network<span class="cat-count">31</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Security')"><div class="cat-dot" style="background:#A32D2D;"></div>Security<span class="cat-count">15</span></div>
+      </div>
+
+      <div class="cat-group">
+        <div class="cat-group-title">Other Equipment</div>
+        <div class="cat-item" onclick="selectCat(this,'Radio')"><div class="cat-dot" style="background:#854F0B;"></div>Radio (Handheld/Base)<span class="cat-count">22</span></div>
+        <div class="cat-item" onclick="selectCat(this,'Projector')"><div class="cat-dot" style="background:#0F6E56;"></div>Projector/TV/Display<span class="cat-count">8</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="inv-main">
+    <div class="breadcrumb">
+      Inventory <span class="breadcrumb-sep">/</span> <span id="breadcrumbCat">Desktop</span> <span class="breadcrumb-sep">/</span> <span id="breadcrumbSub">All Items</span>
+    </div>
+
+    <div class="card section-gap">
+      <div class="card-header">
+        <div><div class="card-title" id="catTitle">Desktop Equipment</div><div class="card-sub" id="catSub">87 items across 15 sub-categories</div></div>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <select class="form-select" style="height:32px;font-size:12px;width:130px;"><option>All Status</option><option>In Stock</option><option>Low Stock</option><option>Out of Stock</option></select>
+          <div class="view-toggle">
+            <button class="view-btn active" onclick="setView('list',this)"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 13H21V11H3V13ZM3 6V8H21V6H3ZM3 18H21V16H3V18Z"/></svg></button>
+            <button class="view-btn" onclick="setView('grid',this)"><svg viewBox="0 0 24 24" fill="currentColor"><rect x="2" y="2" width="9" height="9" rx="1"/><rect x="13" y="2" width="9" height="9" rx="1"/><rect x="2" y="13" width="9" height="9" rx="1"/><rect x="13" y="13" width="9" height="9" rx="1"/></svg></button>
+          </div>
+          <button class="btn btn-primary" style="height:32px;font-size:12px;">+ Add Item</button>
+        </div>
+      </div>
+
+      <!-- LIST VIEW -->
+      <div id="listView">
+        <div class="filter-tabs">
+          <div class="ftab active" onclick="filterFtab(this)">All</div>
+          <div class="ftab" onclick="filterFtab(this)">In Stock</div>
+          <div class="ftab" onclick="filterFtab(this)">Low Stock</div>
+          <div class="ftab" onclick="filterFtab(this)">Out of Stock</div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Item</th><th>Sub-Category</th><th>SKU</th><th>Stock</th><th>Unit</th><th>Status</th><th>Last Updated</th><th>Actions</th></tr></thead>
+            <tbody id="itemsTable">
+              <tr><td><div class="item-cell"><div class="item-thumb">⌨️</div><div><div class="item-name">Mechanical Keyboard</div></div></div></td><td class="text-muted">Keyboard</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00074</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:12%;background:#EF9F27;"></div></div><span class="sbar-val">12</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-low">Low Stock</span></td><td class="text-muted">Mar 12</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">🖥️</div><div><div class="item-name">Monitor 24" LCD</div></div></div></td><td class="text-muted">LCD/Display</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00088</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:65%;background:#378ADD;"></div></div><span class="sbar-val">65</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-in">In Stock</span></td><td class="text-muted">Mar 10</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">💾</div><div><div class="item-name">SSD 512GB</div></div></div></td><td class="text-muted">SSD/HDD</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00102</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:40%;background:#378ADD;"></div></div><span class="sbar-val">40</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-in">In Stock</span></td><td class="text-muted">Mar 11</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">🖱️</div><div><div class="item-name">Wireless Mouse</div></div></div></td><td class="text-muted">Mouse</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00059</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:18%;background:#EF9F27;"></div></div><span class="sbar-val">18</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-low">Low Stock</span></td><td class="text-muted">Mar 9</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">🔌</div><div><div class="item-name">Power Supply 650W</div></div></div></td><td class="text-muted">Power Supply</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00133</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:0%;background:#E24B4A;"></div></div><span class="sbar-val">0</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-out">Out of Stock</span></td><td class="text-muted">Mar 5</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">🟦</div><div><div class="item-name">RAM 8GB DDR4</div></div></div></td><td class="text-muted">RAM</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00044</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:80%;background:#378ADD;"></div></div><span class="sbar-val">80</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-in">In Stock</span></td><td class="text-muted">Mar 14</td><td><button class="action-btn">Edit</button></td></tr>
+              <tr><td><div class="item-cell"><div class="item-thumb">📦</div><div><div class="item-name">CPU Casing ATX</div></div></div></td><td class="text-muted">CPU Casing</td><td class="mono text-muted" style="font-size:11.5px;">SKU-00077</td><td><div class="sbar-wrap"><div class="sbar"><div class="sbar-fill" style="width:25%;background:#EF9F27;"></div></div><span class="sbar-val">25</span></div></td><td class="text-muted">pcs</td><td><span class="badge badge-in">In Stock</span></td><td class="text-muted">Mar 8</td><td><button class="action-btn">Edit</button></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="tbl-footer">
+          <span class="tbl-info">Showing 1–7 of 87 items</span>
+          <div class="pagination">
+            <button class="pg-btn">‹</button>
+            <button class="pg-btn active">1</button>
+            <button class="pg-btn">2</button>
+            <button class="pg-btn">3</button>
+            <button class="pg-btn">›</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRID VIEW (hidden by default) -->
+      <div id="gridView" style="display:none;padding:16px;">
+        <div class="grid-view">
+          <div class="prod-card"><div class="prod-card-thumb">⌨️</div><div class="prod-card-name">Mechanical Keyboard</div><div class="prod-card-sku">SKU-00074</div><div class="prod-card-footer"><span class="badge badge-low">Low</span><span class="prod-card-stock" style="color:var(--warning);">12 pcs</span></div></div>
+          <div class="prod-card"><div class="prod-card-thumb">🖥️</div><div class="prod-card-name">Monitor 24" LCD</div><div class="prod-card-sku">SKU-00088</div><div class="prod-card-footer"><span class="badge badge-in">In Stock</span><span class="prod-card-stock" style="color:var(--success);">65 pcs</span></div></div>
+          <div class="prod-card"><div class="prod-card-thumb">💾</div><div class="prod-card-name">SSD 512GB</div><div class="prod-card-sku">SKU-00102</div><div class="prod-card-footer"><span class="badge badge-in">In Stock</span><span class="prod-card-stock" style="color:var(--success);">40 pcs</span></div></div>
+          <div class="prod-card"><div class="prod-card-thumb">🖱️</div><div class="prod-card-name">Wireless Mouse</div><div class="prod-card-sku">SKU-00059</div><div class="prod-card-footer"><span class="badge badge-low">Low</span><span class="prod-card-stock" style="color:var(--warning);">18 pcs</span></div></div>
+          <div class="prod-card"><div class="prod-card-thumb">🔌</div><div class="prod-card-name">Power Supply 650W</div><div class="prod-card-sku">SKU-00133</div><div class="prod-card-footer"><span class="badge badge-out">Out</span><span class="prod-card-stock" style="color:var(--danger);">0 pcs</span></div></div>
+          <div class="prod-card"><div class="prod-card-thumb">🟦</div><div class="prod-card-name">RAM 8GB DDR4</div><div class="prod-card-sku">SKU-00044</div><div class="prod-card-footer"><span class="badge badge-in">In Stock</span><span class="prod-card-stock" style="color:var(--success);">80 pcs</span></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script src="nav.js"></script>
+<script>
+injectNav('Inventory System','Browse & manage all inventory items');
+
+const catData={
+  Desktop:{title:'Desktop Equipment',sub:'87 items across 15 sub-categories'},
+  Laptop:{title:'Laptop Equipment',sub:'43 items across 8 sub-categories'},
+  Printer:{title:'Printer & Peripherals',sub:'18 items'},
+  Electrical:{title:'Electrical Equipment',sub:'24 items — Battery, Solar Panel, UPS, Breaker, AVR, Inverter'},
+  Display:{title:'Display Equipment',sub:'12 items — Projector, Monitor External, Smart TV'},
+  Telephony:{title:'Telephony',sub:'9 items'},
+  Network:{title:'Network Equipment',sub:'31 items — Firewall, Switch, AP, Router, UTP Cable, RJ45, SFP Module, Fiber Optic, Server, Starlink'},
+  Security:{title:'Security Equipment',sub:'15 items — EDS/Biometric, CCTV Camera, Drone'},
+  Radio:{title:'Radio Equipment',sub:'22 items — Handheld, Base Radio, Repeater, Antenna'},
+  Projector:{title:'Display & AV',sub:'8 items — Projector, Monitor External, Smart TV'}
+};
+
+function selectCat(el, name){
+  document.querySelectorAll('.cat-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  const d=catData[name]||{title:name,sub:'Items in this category'};
+  document.getElementById('catTitle').textContent=d.title;
+  document.getElementById('catSub').textContent=d.sub;
+  document.getElementById('breadcrumbCat').textContent=name;
+}
+
+function setView(v, el){
+  document.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('listView').style.display=v==='list'?'block':'none';
+  document.getElementById('gridView').style.display=v==='grid'?'block':'none';
+}
+
+function filterFtab(el){
+  document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Inventory System — Issuance</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+</head>
+<body>
+<div class="main">
+<div class="content">
+
+<div class="section-grid">
+  <div>
+    <div class="card">
+      <div class="card-header">
+        <div><div class="card-title">Issuance Records</div><div class="card-sub">All inventory items issued to departments/personnel</div></div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-secondary" style="font-size:12px;">Export</button>
+          <button class="btn btn-primary" style="font-size:12px;" onclick="window.location.href='receiving.html'">+ New Issuance</button>
+        </div>
+      </div>
+      <div class="filter-tabs">
+        <div class="ftab active" onclick="ff(this)">All</div>
+        <div class="ftab" onclick="ff(this)">Completed</div>
+        <div class="ftab" onclick="ff(this)">Pending Approval</div>
+        <div class="ftab" onclick="ff(this)">This Month</div>
+      </div>
+      <div class="tbl-wrap">
+        <table>
+          <thead><tr><th>Issuance No.</th><th>Item(s)</th><th>Issued To</th><th>Department</th><th>Qty</th><th>Purpose</th><th>Date</th><th>Status</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">ISS-2026-0033</td>
+              <td><div class="item-cell"><div class="item-thumb">🖱️</div><div><div class="item-name">Wireless Mouse</div><div class="item-sku">SKU-00088</div></div></div></td>
+              <td>M. Reyes</td><td class="text-muted">Finance</td><td class="mono">5 pcs</td><td class="text-muted">Office use</td><td class="text-muted">Mar 13</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">ISS-2026-0032</td>
+              <td><div class="item-cell"><div class="item-thumb">📦</div><div><div class="item-name">Storage Box Set</div><div class="item-sku">SKU-00115</div></div></div></td>
+              <td>L. Cruz</td><td class="text-muted">Operations</td><td class="mono">12 pcs</td><td class="text-muted">Project XYZ</td><td class="text-muted">Mar 11</td>
+              <td><span class="badge badge-low">Pending</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">ISS-2026-0031</td>
+              <td><div class="item-cell"><div class="item-thumb">⌨️</div><div><div class="item-name">Keyboard + Mouse Set</div><div class="item-sku">SKU-00074</div></div></div></td>
+              <td>P. Santos</td><td class="text-muted">IT Dept</td><td class="mono">3 sets</td><td class="text-muted">New hire setup</td><td class="text-muted">Mar 9</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">ISS-2026-0030</td>
+              <td><div class="item-cell"><div class="item-thumb">🔌</div><div><div class="item-name">UTP Cable (roll)</div><div class="item-sku">SKU-NET-022</div></div></div></td>
+              <td>R. Bautista</td><td class="text-muted">IT Dept</td><td class="mono">2 rolls</td><td class="text-muted">WO-2026-0018</td><td class="text-muted">Mar 8</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+            <tr>
+              <td class="mono" style="color:var(--blue-600);font-size:12px;">ISS-2026-0029</td>
+              <td><div class="item-cell"><div class="item-thumb">💾</div><div><div class="item-name">SSD 512GB</div><div class="item-sku">SKU-00102</div></div></div></td>
+              <td>J. Dela Cruz</td><td class="text-muted">Admin</td><td class="mono">2 pcs</td><td class="text-muted">PC upgrade</td><td class="text-muted">Mar 7</td>
+              <td><span class="badge badge-in">Completed</span></td>
+              <td><button class="action-btn">View</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tbl-footer">
+        <span class="tbl-info">Showing 1–5 of 33 issuance records</span>
+        <div class="pagination">
+          <button class="pg-btn">‹</button>
+          <button class="pg-btn active">1</button>
+          <button class="pg-btn">2</button>
+          <button class="pg-btn">3</button>
+          <button class="pg-btn">›</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">This Month</div></div>
+      <div class="panel-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:var(--blue-50);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--blue-600);font-family:'DM Mono',monospace;">12</div>
+            <div style="font-size:11px;color:var(--blue-800);">Issuances</div>
+          </div>
+          <div style="background:var(--success-bg);border-radius:8px;padding:12px;text-align:center;">
+            <div style="font-size:22px;font-weight:600;color:var(--success);font-family:'DM Mono',monospace;">87</div>
+            <div style="font-size:11px;color:var(--success);">Items Out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-header"><div class="panel-title">Top Requesting Departments</div></div>
+      <div class="panel-body" style="padding:8px 16px;">
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>IT Department</span><span class="mono">14</span></div>
+          <div style="height:5px;background:var(--gray-100);border-radius:3px;"><div style="width:82%;height:100%;background:var(--blue-400);border-radius:3px;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Operations</span><span class="mono">9</span></div>
+          <div style="height:5px;background:var(--gray-100);border-radius:3px;"><div style="width:53%;height:100%;background:var(--blue-400);border-radius:3px;"></div></div>
+        </div>
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Finance</span><span class="mono">6</span></div>
+          <div style="height:5px;background:var(--gray-100);border-radius:3px;"><div style="width:35%;height:100%;background:var(--blue-400);border-radius:3px;"></div></div>
+        </div>
+        <div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px;"><span>Admin</span><span class="mono">4</span></div>
+          <div style="height:5px;background:var(--gray-100);border-radius:3px;"><div style="width:24%;height:100%;background:var(--blue-200);border-radius:3px;"></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div></div>
+<script src="nav.js"></script>
+<script>
+injectNav('Issuance Form','Inventory items issued records');
+function ff(el){document.querySelectorAll('.ftab').forEach(t=>t.classList.remove('active'));el.classList.add('active');}
+</script>
+</body>
+</html>
